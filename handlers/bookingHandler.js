@@ -20,7 +20,7 @@ exports.createSession = catchAsync(async (req, res, next) => {
                 amount: tour.price * 100,
                 quantity: 1,
                 currency: 'usd',
-                images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
+                images: [`${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`],
                 name: `${tour.name} Tour`,
                 description: tour.summary
             }
@@ -55,17 +55,45 @@ exports.getMyBookedTours = catchAsync(async (req, res, next) => {
     });
 });
 
-exports.createBookingByTourAndUser = catchAsync(async (req, res) => {
-    const booking = await BookingModel.create({
-        price: req.tour.price,
-        user: req.user.id,
-        tour: req.tour.id
-    });
-    res.status(200).json({
-        status: 'Success',
-        data: booking
-    });
-});
+// exports.createBookingByTourAndUser = catchAsync(async (req, res) => {
+//     const booking = await BookingModel.create({
+//         price: req.tour.price,
+//         user: req.user.id,
+//         tour: req.tour.id
+//     });
+//     res.status(200).json({
+//         status: 'Success',
+//         data: booking
+//     });
+// });
+
+const createBookingCheckout = async sessionData => {
+    const tour = sessionData.client_reference_id;
+    const user = await UserModel.findOne({ email: sessionData.customer_email }).id;
+    const price = sessionData.line_items[0].amount / 100;
+
+    await BookingModel.create({ tour, user, price });
+};
+
+exports.webhookCheckout = async (req, res, next) => {
+    const signature = req.headers['stripe-signature'];
+
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(
+            req.body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+    } catch (e) {
+        return res.status(400).send(`Webhook Error: ${e.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        await createBookingCheckout(event.data.object);
+    }
+    res.status(200).json({ received: true });
+};
 
 exports.checkBody = factoryFunctions.checkBody();
 exports.getAllBookings = factoryFunctions.getAll(BookingModel);

@@ -19,10 +19,10 @@ bookingsRouter.post('/tour/:id/create-session', tourHandler.getTour, bookingHand
 bookingsRouter.get('/my-booked-tours', bookingHandler.getMyBookedTours);
 
 // create booking
-bookingsRouter.post(
-    '/tour/:id/booking',
-    tourHandler.getTour,
-    bookingHandler.createBookingByTourAndUser
-);
+// bookingsRouter.post(
+//     '/tour/:id/booking',
+//     tourHandler.getTour,
+//     bookingHandler.createBookingByTourAndUser
+// );
 
 module.exports = bookingsRouter;
