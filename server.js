@@ -3,12 +3,16 @@ const app = require('./app');
 
 // Creating the connection to mongoose
 
-const CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING.replace(
-    '<password>',
-    process.env.DATABASE_PASSWORD
-);
+let CONNECTION_STRING;
 
-// const CONNECTION_STRING = process.env.MONGODB_URL
+if (process.env.NODE_ENV === 'PRODUCTION') {
+    CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING.replace(
+        '<password>',
+        process.env.DATABASE_PASSWORD
+    );
+} else {
+    CONNECTION_STRING = process.env.MONGODB_URL;
+}
 
 mongoose
     .connect(CONNECTION_STRING, {
