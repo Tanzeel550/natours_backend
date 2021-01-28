@@ -31,6 +31,21 @@ mongoose
 // Starting the server
 const port = process.env.PORT || 8000;
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
+});
+
+process.on('unhandledRejection', err => {
+    console.log('UNHANDLED REJECTION 👺 SHUTTING DOWN GRACEFULLY');
+    console.log(err.name, err.message);
+    server.close(() => {
+        process.exit(1);
+    });
+});
+
+process.on('SIGTERM', () => {
+    console.log('😓 SIGTERM received. We are closing now');
+    server.close(() => {
+        console.log('👺 The server has closed');
+    });
 });
