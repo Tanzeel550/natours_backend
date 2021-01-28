@@ -71,29 +71,28 @@ exports.getMyBookedTours = catchAsync(async (req, res, next) => {
 const createBookingCheckout = async sessionData => {
     console.log(sessionData);
     const tour = sessionData.client_reference_id;
-    const user = await UserModel.findOne({ email: sessionData.customer_email }).id;
+    const user = await UserModel.findOne({ email: sessionData.customer_email });
     // const price = sessionData.line_items[0].amount / 100;
     const price = sessionData.amount_total / 100;
-    await BookingModel.create({ tour, user, price });
+    await BookingModel.create({ tour, user: user.id, price });
 };
 
 exports.webhookCheckout = async (req, res, next) => {
     const signature = req.headers['stripe-signature'];
 
-    let event;
     try {
-        event = stripe.webhooks.constructEvent(
+        const event = stripe.webhooks.constructEvent(
             req.body,
             signature,
             process.env.STRIPE_WEBHOOK_SECRET
         );
+        if (event.type === 'checkout.session.completed') {
+            await createBookingCheckout(event.data.object);
+        }
     } catch (e) {
         return res.status(400).send(`Webhook Error: ${e.message}`);
     }
 
-    if (event.type === 'checkout.session.completed') {
-        await createBookingCheckout(event.data.object);
-    }
     res.status(200).json({ received: true });
 };
 
