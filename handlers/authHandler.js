@@ -5,7 +5,6 @@ const jsonWebToken = require('jsonwebtoken');
 const AppError = require('./../utils/AppError');
 const sendEmail = require('./../utils/sendEmail');
 const { promisify } = require('util');
-const chalk = require('chalk');
 
 const generateToken = (user, res) => {
     const token = jsonWebToken.sign({ id: user.id }, process.env.JWT_SECRET_KEY, {
@@ -28,49 +27,34 @@ const generateToken = (user, res) => {
 exports.protect = catchAsync(async (req, res, next) => {
     //    1) Grab the authorization from request headers
     let token;
-    if (req.cookies.token) {
-        token = req.cookies.token;
-    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    if (req.cookies.token) token = req.cookies.token;
+    else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer'))
         token = req.headers.authorization.split(' ')[1];
-    } else token = undefined;
+    else token = undefined;
 
     // 2) if token is invalid than send back an error
-    if (!token) {
-        return next(new AppError('Please login to continue', 404));
-    }
+    if (!token) return next(new AppError('Your token is invalid. Please login again!', 404));
 
     //    3) Get the token and id from that token
-    // we are wrapping this function in try-catch because jsonWebToken.verify throws an exception
-    // if token that was provided was undefined or it has expired!
-    let verifyToken;
-    try {
-        verifyToken = await promisify(jsonWebToken.verify)(token, process.env.JWT_SECRET_KEY);
-    } catch (e) {
-        return next(new AppError('Please login to continue', 404));
-    }
-
+    const verifyToken = await promisify(jsonWebToken.verify)(token, process.env.JWT_SECRET_KEY);
     const { id, iat } = verifyToken;
 
     //    4) Get the user based on the id, if no user send back an error
     const user = await UserModel.findById(id).select('+password +changePasswordAt');
-    if (!user) {
-        return next(new AppError('Please login to continue', 404));
-    }
+
+    if (!user) return next(new AppError('Your Email does not exist', 404));
+    if (!user.isVerified) return next(new AppError('Your Email is not verified', 404));
 
     // 5) Check if the user has not changed password
     const isAfter = user.isAfter(iat);
-    if (isAfter) {
-        return next(new AppError('Please Login again. Your password is changed', 404));
-    }
+    if (isAfter) return next(new AppError('Please Login again. Your password is changed', 404));
 
     req.user = user;
     next();
 });
 
 // This is only for verifying user from frontend if the token stored in frontend is right!
-exports.verifyToken = catchAsync(async (req, res, next) => {
-    generateToken(req.user, res);
-});
+exports.verifyToken = catchAsync(async (req, res, next) => generateToken(req.user, res));
 
 exports.restrictTo = (...args) => {
     return (req, res, next) => {
@@ -152,6 +136,7 @@ const acceptUserAuthTokens = async ({ userToken }) => {
 
     user.authToken = undefined;
     user.authTokenTimeOut = undefined;
+    user.isVerified = true;
     await user.save({ validateBeforeSave: false });
 
     return user;
@@ -168,20 +153,13 @@ exports.login = catchAsync(async (req, res, next) => {
     generateToken(await acceptUserAuthTokens({ userToken: req.params.token }), res);
 });
 
-exports.logout = (req, res, next) => {
-    res.status(200).json({
-        status: 'Success',
-        token: ''
-    });
-};
+exports.logout = (req, res, next) => res.status(200).json({ status: 'Success', token: '' });
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
     //    1) Get the email from the body, if email does not exist than send back an error
     const { email } = req.body;
     const user = await UserModel.findOne({ email });
-    if (!email || !user) {
-        return next(new AppError('Please provide required Email!', 404));
-    }
+    if (!email || !user) return next(new AppError('Please provide required Email!', 404));
 
     //    2) Generate a forgotPassword token and it will be valid for 10 minutes and send them as email,
     //      forgotPasswordToken should be encrypted before saving it to the database.
@@ -201,34 +179,27 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 exports.resetPassword = catchAsync(async (req, res, next) => {
     //    1) Grab the token from the req and generate passwordResetToken
     const userToken = req.params.token;
-    if (!userToken) {
+    if (!userToken)
         return next(new AppError('You have not provided a required reset Password token!', 404));
-    }
-    const passwordResetToken = crypto.createHash('sha256').update(userToken).digest('hex');
 
-    if (userToken !== passwordResetToken) {
-        return next(new AppError('Your token is invalid.', 404));
-    }
+    const passwordResetToken = crypto.createHash('sha256').update(userToken).digest('hex');
+    if (userToken !== passwordResetToken) return next(new AppError('Your token is invalid.', 404));
 
     //    2) Check if user with passwordResetToken exists in the db, if no send back an error.
     let user = await UserModel.findOne({ passwordResetToken }).select(
         'passwordResetToken passwordResetTokenTimeOut'
     );
 
-    if (!user) {
-        return next(new AppError('No User with this reset Token', 404));
-    }
+    if (!user) return next(new AppError('No User with this reset Token', 404));
 
     //    3) Check if passwordResetTokenTimeOut is not greater than now, if yes, send back an error
-    if (Date.now() > user.passwordResetTokenTimeOut) {
+    if (Date.now() > user.passwordResetTokenTimeOut)
         return next(new AppError('This Token has expired!', 404));
-    }
 
     //    4) Grab the password and confirmPassword and then assign the user with the password.
     const { password, confirmPassword } = req.body;
-    if (!password || !confirmPassword) {
+    if (!password || !confirmPassword)
         return next(new AppError('Please provide both password and confirm Password'));
-    }
 
     user.password = password;
     user.confirmPassword = confirmPassword;
@@ -247,27 +218,22 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
     //    2) Grab the current password from the req.body of logged User, if it is not same then send an error!
     const { currentPassword, password, confirmPassword } = req.body;
-    if (!currentPassword || !password || !confirmPassword) {
+    if (!currentPassword || !password || !confirmPassword)
         return next(
             new AppError(
                 'Please provide all of the required fields Current Password, Password and Confirm Password!',
                 404
             )
         );
-    }
     const isPasswordValid = await user.comparePassword(currentPassword, user.password);
 
     //    3) Update the password
-    if (!isPasswordValid) {
-        return next(new AppError('Your password is incorrect', 404));
-    }
+    if (!isPasswordValid) return next(new AppError('Your password is incorrect', 404));
 
     user.password = password;
     user.confirmPassword = confirmPassword;
-    user = await user.save({
-        new: true,
-        runValidators: true
-    });
+
+    user = await user.save({ new: true, runValidators: true });
     res.status(200).json({
         status: 'Success',
         user

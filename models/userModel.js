@@ -13,7 +13,7 @@ const userSchema = new Schema(
             type: String,
             required: [true, 'Email is required'],
             unique: [true, 'Your email already exists!'],
-            validate: validator.isEmail
+            validate: [validator.isEmail, 'Please Provide a valid Email']
         },
         password: {
             type: String,
@@ -73,6 +73,11 @@ const userSchema = new Schema(
             type: Date,
             default: undefined,
             select: false
+        },
+        isVerified: {
+            type: Boolean,
+            default: false,
+            select: true
         }
     },
     {

@@ -1,79 +1,74 @@
-const chalk = require('chalk');
+const AppError = require('./../utils/AppError');
 
-const devErrors = (error, res) => {
-    return res.status(error.statusCode).json({
-        status: 'Error',
-        message: error.message,
-        error,
-        stack: error.stack
+const handleCastErrorDB = err => {
+    const message = `Invalid ${err.path}: ${err.value}.`;
+    return new AppError(message, 400);
+};
+
+const handleDuplicateFieldsDB = err => {
+    const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+    // console.log(value);
+
+    const message = `Duplicate field value: ${value}. Please use another value!`;
+    return new AppError(message, 400);
+};
+
+const handleValidationErrorDB = err => {
+    const errors = Object.values(err.errors).map(el => el.message);
+
+    const message = `Invalid input data. ${errors.join(', ')}`;
+    return new AppError(message, 400);
+};
+
+const handleJWTError = () => new AppError('Invalid token. Please log in again!', 401);
+
+const handleJWTExpiredError = () =>
+    new AppError('Your token has expired! Please log in again.', 401);
+
+const sendErrorDev = (err, req, res) => {
+    return res.status(err.statusCode).json({
+        status: err.status,
+        error: err,
+        message: err.message,
+        stack: err.stack
     });
 };
 
-let globalRes;
-
-const prodErrors = (errorCode, message) => {
-    globalRes.status(errorCode).json({
-        status: 'Error',
-        message: message || 'Something very bad has happened!'
+const sendErrorProd = (err, req, res) => {
+    // A) Operational, trusted error: send message to client
+    if (err.isOperational) {
+        return res.status(err.statusCode).json({
+            status: err.statusCode,
+            message: err.message
+        });
+    }
+    // B) Programming or other unknown error: don't leak error details
+    // 1) Log error
+    console.error('ERROR 💥', err);
+    // 2) Send generic message
+    return res.status(500).json({
+        status: 'error',
+        message: 'Something went very wrong!'
     });
 };
 
-const tourValidationError = error => {
-    let validationErrorFields = [];
-    Object.keys(error.errors).forEach(value => validationErrorFields.push(value));
-    validationErrorFields = validationErrorFields.join(', ');
-    return prodErrors(error.statusCode, `The Fields '${validationErrorFields}' are required`);
-};
+module.exports = (err, req, res, next) => {
+    err.statusCode = err.statusCode || 500;
+    err.status = err.status || 'error';
 
-const jsonParsingError = ({ statusCode }) => prodErrors(statusCode, 'Your JSON is inaccurate');
+    if (process.env.NODE_ENV === 'DEVELOPMENT') {
+        sendErrorDev(err, req, res);
+    } else if (process.env.NODE_ENV === 'PRODUCTION') {
+        let error = { ...err };
+        error.message = err.message;
 
-const objectIdValidationError = ({ statusCode }) =>
-    prodErrors(statusCode, 'You have provided Invalid ID!');
+        if (error.name === 'CastError') error = handleCastErrorDB(error);
+        if (error.statusCode === 11000) error = handleDuplicateFieldsDB(error);
+        if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
+        if (error.name === 'JsonWebTokenError') error = handleJWTError();
+        if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
+        if (error._message === 'users validation failed') error = handleValidationErrorDB(error);
 
-const usersValidationError = error => {
-    const err = Object.values(error)[0];
-    globalRes.status(error.statusCode).json({
-        status: 'Error',
-        message: err
-    });
-};
-
-const invalidBodyError = ({ statusCode }) => {
-    return prodErrors(statusCode, 'You have provided invalid body');
-};
-
-// err -> AppError
-globalErrorController = (error, req, res, next) => {
-    error.isOperational = error.isOperational || false;
-    error.statusCode = error.statusCode || 404;
-
-    //    We only need to handle errors in Production
-    //    In Development errors, we only need to send the errors as a response
-
-    console.log(chalk.red.bold('An Error Occurred: ', error.message));
-    console.error('ERROR👹👹👹👹👹', error);
-    if (process.env.ENVIRONMENT === 'development') {
-        devErrors(error, res);
-    } else {
-        globalRes = res;
-        if (error._message === 'tours validation failed') {
-            return tourValidationError(error);
-        }
-        if (error._message === 'users validation failed') {
-            return usersValidationError(error, res);
-        }
-        if (error.type === 'entity.parse.failed') {
-            return jsonParsingError(error);
-        }
-        if (error.kind === 'ObjectId') {
-            return objectIdValidationError(error);
-        }
-        if (error.message === 'body is not iterable') {
-            return invalidBodyError(error);
-        }
-
-        prodErrors(error.statusCode);
+        sendErrorProd(error, req, res);
     }
 };
-
-module.exports = globalErrorController;
