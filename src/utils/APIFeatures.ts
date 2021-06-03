@@ -1,4 +1,6 @@
 class APIFeatures {
+	public query: any;
+	public queryParams: any;
   // query -> Model.find()
   // queryParams -> req.query
 

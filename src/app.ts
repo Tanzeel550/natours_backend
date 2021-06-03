@@ -29,7 +29,7 @@ if (process.env.ENVIRONMENT === 'development') {
   app.use(morgan('dev'));
 }
 
-// Global middlewares
+// Global MiddleWares
 app.use(express.json());
 
 // setting up cookie parser so that we can receive the cookie
