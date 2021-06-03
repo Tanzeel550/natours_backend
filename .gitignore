@@ -1,4 +1,4 @@
-dev-data
+src/dev-data
 node_modules
 *env
 .vscode

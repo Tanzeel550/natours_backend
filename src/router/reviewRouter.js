@@ -1,7 +1,7 @@
 const express = require('express');
-const reviewHandler = require('./../handlers/reviewHandler');
-const authHandler = require('./../handlers/authHandler');
-const tourHandler = require('./../handlers/tourHandler');
+const reviewHandler = require('../handlers/reviewHandler');
+const authHandler = require('../handlers/authHandler');
+const tourHandler = require('../handlers/tourHandler');
 
 const reviewRouter = express.Router({
   mergeParams: true

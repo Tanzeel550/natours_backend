@@ -1,9 +1,9 @@
 const chalk = require('chalk');
 const multer = require('multer');
-const catchAsync = require('./../utils/catchAsync');
+const catchAsync = require('../utils/catchAsync');
 const sharp = require('sharp');
 const slugify = require('slugify');
-const AppError = require('./../utils/AppError');
+const AppError = require('../utils/AppError');
 const fs = require('fs');
 
 // const storage = multer.diskStorage({

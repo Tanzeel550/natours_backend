@@ -1,8 +1,8 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const catchAsync = require('./../utils/catchAsync');
-const BookingModel = require('./../models/bookingModel');
+const catchAsync = require('../utils/catchAsync');
+const BookingModel = require('../models/bookingModel');
 const factoryFunctions = require('./factoryFunctions');
-const UserModel = require('./../models/userModel');
+const UserModel = require('../models/userModel');
 
 exports.createSession = catchAsync(async (req, res, next) => {
   const { user, tour } = req;

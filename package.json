@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "devStart": "nodemon server.js",
-    "prodStart": "NODE_ENV=PRODUCTION nodemon server.js",
-    "debug": "ndb server.js"
+    "start": "node src/server.js",
+    "devStart": "nodemon src/server.js",
+    "prodStart": "NODE_ENV=PRODUCTION nodemon src/server.js",
+    "debug": "ndb src/server.js"
   },
   "keywords": [],
   "author": "",

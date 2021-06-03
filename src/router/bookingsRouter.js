@@ -1,6 +1,6 @@
 const express = require('express');
-const authHandler = require('./../handlers/authHandler');
-const tourHandler = require('./../handlers/tourHandler');
+const authHandler = require('../handlers/authHandler');
+const tourHandler = require('../handlers/tourHandler');
 const bookingHandler = require('../handlers/bookingHandler');
 
 const bookingsRouter = express.Router({
