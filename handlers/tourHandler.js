@@ -14,40 +14,43 @@ exports.deleteTour = factoryFunctions.deleteOne(TourModel);
 
 // TODO: Implement Tour Stats function
 exports.getTourStats = catchAsync(async (req, res, next) => {
-    const stats = await TourModel.aggregate([
-        {
-            $group: {
-                _id: '$ratingsAverage'
-            }
-        }
-    ]);
-    res.status(200).json({
-        status: 'Success',
-        data: {
-            stats
-        }
-    });
+  const stats = await TourModel.aggregate([
+    {
+      $group: {
+        _id: '$ratingsAverage'
+      }
+    }
+  ]);
+  res.status(200).json({
+    status: 'Success',
+    data: {
+      stats
+    }
+  });
 });
 
 // TODO: implement the following
 exports.getToursWithIn = catchAsync(async (req, res, next) => {
-    const radiusOfEarthInMiles = 3958.8;
-    const radiusOfEarthInKM = 6371;
+  const radiusOfEarthInMiles = 3958.8;
+  const radiusOfEarthInKM = 6371;
 
-    const { lat, lng, distance, unit } = req.params;
+  const { lat, lng, distance, unit } = req.params;
 
-    if (!lat || !lng || !unit || !distance) {
-        return next(
-            new AppError('Please provide the three arguments-> lat, lng, distance and unit', 404)
-        );
-    }
+  if (!lat || !lng || !unit || !distance) {
+    return next(
+      new AppError(
+        'Please provide the three arguments-> lat, lng, distance and unit',
+        404
+      )
+    );
+  }
 
-    res.status(200).json({
-        status: 'Success'
-    });
+  res.status(200).json({
+    status: 'Success'
+  });
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
-    req.tour = await TourModel.findById(req.params.id);
-    next();
+  req.tour = await TourModel.findById(req.params.id);
+  next();
 });

@@ -24,11 +24,11 @@ userRouter.get('/logout', authHandler.logout);
 userRouter.get('/getMe', userHandler.getMe);
 userRouter.put('/updatePassword', authHandler.updatePassword);
 userRouter.put(
-    '/updateMe',
-    authHandler.restrictTo('user', 'admin'),
-    multerHandler.userSingleUpload,
-    multerHandler.resizeUserPhoto,
-    userHandler.updateMe
+  '/updateMe',
+  authHandler.restrictTo('user', 'admin'),
+  multerHandler.userSingleUpload,
+  multerHandler.resizeUserPhoto,
+  userHandler.updateMe
 );
 
 userRouter.delete('/deleteMe', userHandler.deleteMe);
@@ -37,9 +37,9 @@ userRouter.delete('/deleteMe', userHandler.deleteMe);
 userRouter.use(authHandler.restrictTo('admin'));
 userRouter.route('/').get(userHandler.getAllUsers);
 userRouter
-    .route('/:id')
-    .put(userHandler.updateUser)
-    .get(userHandler.getUserById)
-    .delete(userHandler.deleteUser);
+  .route('/:id')
+  .put(userHandler.updateUser)
+  .get(userHandler.getUserById)
+  .delete(userHandler.deleteUser);
 
 module.exports = userRouter;

@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
@@ -11,7 +10,6 @@ const ReviewRouter = require('./router/reviewRouter');
 const BookingRouter = require('./router/bookingsRouter');
 const globalErrorController = require('./handlers/errorHandler');
 const AppError = require('./utils/AppError');
-const authHandler = require('./handlers/authHandler');
 const { webhookCheckout } = require('./handlers/bookingHandler');
 
 dotenv.config({ path: `${__dirname}/config.env` });
@@ -21,10 +19,14 @@ const app = express();
 
 app.use(cors());
 
-app.post('/webhook-checkout', express.raw({ type: 'application/json' }), webhookCheckout);
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  webhookCheckout
+);
 
 if (process.env.ENVIRONMENT === 'development') {
-    app.use(morgan('dev'));
+  app.use(morgan('dev'));
 }
 
 // Global middlewares
@@ -53,7 +55,9 @@ app.use('/api/v1/bookings', BookingRouter);
 //     });
 // });
 
-app.all('*', (req, res, next) => next(new AppError('This route does not exist', 404)));
+app.all('*', (req, res, next) =>
+  next(new AppError('This route does not exist', 404))
+);
 
 app.use(globalErrorController);
 

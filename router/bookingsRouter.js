@@ -4,7 +4,7 @@ const tourHandler = require('./../handlers/tourHandler');
 const bookingHandler = require('../handlers/bookingHandler');
 
 const bookingsRouter = express.Router({
-    mergeParams: true
+  mergeParams: true
 });
 
 // This tour is specially for creating bookings because it is called by stripe
@@ -13,7 +13,11 @@ const bookingsRouter = express.Router({
 bookingsRouter.use(authHandler.protect);
 
 // create session
-bookingsRouter.post('/tour/:id/create-session', tourHandler.getTour, bookingHandler.createSession);
+bookingsRouter.post(
+  '/tour/:id/create-session',
+  tourHandler.getTour,
+  bookingHandler.createSession
+);
 
 // get all the bookings using user and tour
 bookingsRouter.get('/my-booked-tours', bookingHandler.getMyBookedTours);
