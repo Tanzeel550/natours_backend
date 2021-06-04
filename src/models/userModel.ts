@@ -100,7 +100,9 @@ userSchema.virtual('reviews', {
   foreignField: 'user'
 });
 
-// @ts-ignore
+// Todo: Change the type of pre in mongoose.index.d.ts to (string | RegExp)
+//  so that we can also use RegExp or use @ts-ignore
+
 userSchema.pre(/^find/, function (next: HookNextFunction) {
   // @ts-ignore
   const doc: Model<UserDocumentType> = this;

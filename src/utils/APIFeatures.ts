@@ -1,10 +1,13 @@
-class APIFeatures {
-	public query: any;
-	public queryParams: any;
+import { Query } from 'express-serve-static-core';
+import { Document, DocumentQuery } from 'mongoose';
+
+class APIFeatures<T extends Document> {
+  public query: DocumentQuery<T[], T>;
+  public queryParams: Query;
   // query -> Model.find()
   // queryParams -> req.query
 
-  constructor(query, queryParams) {
+  constructor(query: DocumentQuery<T[], T>, queryParams: Query) {
     this.query = query;
     this.queryParams = queryParams;
   }
@@ -28,7 +31,9 @@ class APIFeatures {
 
   limitFields() {
     if (this.queryParams.fields) {
-      const fields = this.queryParams.fields.split(',').join(' ');
+      const fields = (this.queryParams as { fields: string }).fields
+        .split(',')
+        .join(' ');
       this.query = this.query.select(fields);
     }
     return this;
@@ -36,18 +41,20 @@ class APIFeatures {
 
   sort() {
     if (this.queryParams.sortBy) {
-      const sortBy = this.queryParams.sortBy.split(',').join(' ');
+      const sortBy = (this.queryParams as { sortBy: string }).sortBy
+        .split(',')
+        .join(' ');
       this.query = this.query.sort(sortBy);
     }
     return this;
   }
 
   paginationAndLimitation() {
-    const pageNo = this.queryParams.page * 1 - 1 || 1;
-    const limit = this.queryParams.limit * 1 || 100;
-    this.query = this.query.limit(limit).skip(pageNo * this.queryParams.limit);
+    const pageNo = Number((this.queryParams as { page: string }).page) - 1 || 1;
+    const limit = Number((this.queryParams as { limit: string }).limit) || 100;
+    this.query = this.query.limit(limit).skip(pageNo * limit);
     return this;
   }
 }
 
-module.exports = APIFeatures;
+export default APIFeatures;

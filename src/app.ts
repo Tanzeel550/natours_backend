@@ -10,7 +10,7 @@ const ReviewRouter = require('./router/reviewRouter');
 const BookingRouter = require('./router/bookingsRouter');
 const globalErrorController = require('./handlers/errorHandler');
 const AppError = require('./utils/AppError');
-const { webhookCheckout } = require('./handlers/bookingHandler');
+const { webHookCheckout } = require('./handlers/bookingHandler');
 
 dotenv.config({ path: `${__dirname}/config.env` });
 
@@ -22,7 +22,7 @@ app.use(cors());
 app.post(
   '/webhook-checkout',
   express.raw({ type: 'application/json' }),
-  webhookCheckout
+  webHookCheckout
 );
 
 if (process.env.ENVIRONMENT === 'development') {

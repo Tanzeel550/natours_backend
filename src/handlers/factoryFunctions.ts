@@ -1,9 +1,11 @@
-const catchAsync = require('../utils/catchAsync');
-const APIFeatures = require('../utils/APIFeatures');
-const AppError = require('../utils/AppError');
+import catchAsync from '../utils/catchAsync';
+import APIFeatures from '../utils/APIFeatures';
+import AppError from '../utils/AppError';
+import { Model, Document, DocumentQuery } from 'mongoose';
+import { NextFunction, Request, Response } from 'express';
 
-exports.getAll = Model =>
-  catchAsync(async (req, res, next) => {
+export const getAll = <T extends Document>(Model: Model<T>) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     let query = new APIFeatures(Model.find(), req.query)
       .filter()
       .limitFields()
@@ -19,13 +21,19 @@ exports.getAll = Model =>
       }
     });
   });
+};
 
-exports.getOne = Model =>
-  catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
+export const getOne = <T extends Document>(Model: Model<T>) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    let query: DocumentQuery<Document | null, Document> = Model.findById(
+      req.params.id
+    );
 
-    if (req.toBePopulatedWith) {
-      req.toBePopulatedWith.forEach(item => query.populate(item));
+    // req.body.toBePopulatedWith is an array of strings
+    if (req.body.toBePopulatedWith) {
+      req.body.toBePopulatedWith.forEach((item: string) =>
+        query.populate(item)
+      );
     }
     const doc = await query;
     if (!doc) {
@@ -39,10 +47,11 @@ exports.getOne = Model =>
       }
     });
   });
+};
 
-exports.createOne = Model =>
-  catchAsync(async (req, res, next) => {
-    const doc = await Model.create(req.body);
+export const createOne = <T extends Document>(Model: Model<T>) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const doc = await model.create(req.body);
     res.status(200).json({
       status: 'Success',
       data: {
@@ -50,10 +59,11 @@ exports.createOne = Model =>
       }
     });
   });
+};
 
-exports.updateOne = Model =>
-  catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+export const updateOne = <T extends Document>(Model: Model<T>) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const doc = await model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true
     });
@@ -64,23 +74,26 @@ exports.updateOne = Model =>
       data: { doc }
     });
   });
+};
 
-exports.deleteOne = Model =>
-  catchAsync(async (req, res, next) => {
-    await Model.findByIdAndDelete(req.params.id);
+export const deleteOne = <T extends Document>(Model: Model<T>) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    await model.findByIdAndRemove(req.params.id);
     res.status(204).json({});
   });
+};
 
-exports.checkBody = () =>
-  catchAsync(async (req, res, next) => {
+export const checkBody = () => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     if (Object.keys(req.body).length === 0)
       return next(new AppError('Body is No provided', 404));
     next();
   });
+};
 
-exports.populateWith =
-  (...args) =>
-  (req, res, next) => {
-    req.toBePopulatedWith = args;
+export const populateWith = (...args: [string]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    req.body.toBePopulatedWith = args;
     next();
   };
+};

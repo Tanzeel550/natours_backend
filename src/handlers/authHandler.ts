@@ -4,7 +4,6 @@ import catchAsync from '../utils/catchAsync';
 import jsonWebToken from 'jsonwebtoken';
 import AppError from '../utils/AppError';
 import sendEmail from '../utils/sendEmail';
-import { promisify } from 'util';
 import { UserDocumentType } from '../types/authTypes';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 
@@ -51,13 +50,14 @@ export const protect: RequestHandler = catchAsync(
         new AppError('Your token is invalid. Please login again!', 404)
       );
 
-    //    3) Get the token and id from that token
-    const verifyToken = (await promisify(jsonWebToken.verify)(
-      token,
-      process.env.JWT_SECRET_KEY as string
-    )) as { id: string; iat: string };
+    type fg = { id: string; iat: string };
 
-    const { id, iat } = verifyToken;
+    //    3) Get the token and id from that token
+    const decoded: fg = jsonWebToken.verify(
+      token,
+      process.env.JWT_SECRET_KEY!!
+    ) as fg;
+    const { id, iat } = decoded;
 
     //    4) Get the user based on the id, if no user send back an error
     const user = await UserModel.findById(id).select(
@@ -112,7 +112,7 @@ export const sendSignUpEmail: RequestHandler = catchAsync(
         return next(
           new AppError(`${email} already exists. Please try a new one!`, 404)
         );
-      throw e;
+      throw new AppError(`${e.name} - ${e.message}`, 404);
     }
 
     const authToken = user.createAuthToken();
