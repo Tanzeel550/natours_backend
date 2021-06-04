@@ -1,13 +1,19 @@
+import { UserDocumentType } from '../types/authTypes';
 const nodemailer = require('nodemailer');
 const htmlToText = require('html-to-text');
 const pug = require('pug');
 
-module.exports = class Email {
-  constructor(user, url) {
+export default class Email {
+  private readonly to: string;
+  private readonly firstName: string;
+  private readonly url: string;
+  private readonly from: string;
+
+  constructor(user: UserDocumentType, url: string) {
     this.to = user.email;
     this.firstName = user.name.split(' ')[0];
     this.url = url;
-    this.from = process.env.EMAIL_FROM;
+    this.from = process.env.EMAIL_FROM as string;
   }
 
   newTransport() {
@@ -24,7 +30,7 @@ module.exports = class Email {
 
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT * 1,
+      port: Number(process.env.EMAIL_PORT),
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASSWORD
@@ -33,7 +39,7 @@ module.exports = class Email {
   }
 
   // Send the actual email
-  async send(subject, message, linkMessage) {
+  async send(subject: string, message: string, linkMessage: string) {
     // 1) Render HTML based on a pug template
     const html = pug.renderFile(`${__dirname}/emailTemplate.pug`, {
       name: this.firstName,
@@ -86,4 +92,4 @@ module.exports = class Email {
       'Click to Reset Password'
     );
   }
-};
+}

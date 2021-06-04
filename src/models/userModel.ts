@@ -1,9 +1,17 @@
-const { Schema, model } = require('mongoose');
-const validator = require('validator');
-const crypto = require('crypto');
-const bcrypt = require('bcrypt');
+import {
+  HookNextFunction,
+  Model,
+  model,
+  MongooseDocument,
+  Query,
+  Schema
+} from 'mongoose';
+import { UserDocumentType } from '../types/authTypes';
+import validator from 'validator';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
-const userSchema = new Schema(
+const userSchema: Schema = new Schema(
   {
     name: {
       type: String,
@@ -25,7 +33,7 @@ const userSchema = new Schema(
       type: String,
       required: [true, 'Confirm Password is required'],
       validate: {
-        validator: function (value) {
+        validator: function (value: string) {
           return value === this.password;
         },
         message: 'Your passwords do not match!'
@@ -50,7 +58,7 @@ const userSchema = new Schema(
       select: false
     },
     passwordResetTokenTimeOut: {
-      type: Date,
+      type: Number, // No. will be representing the milliseconds at which token timesOut
       default: undefined,
       select: false
     },
@@ -59,8 +67,8 @@ const userSchema = new Schema(
       default: false,
       select: false
     },
-    changePasswordAt: {
-      type: Date,
+    changedPasswordAt: {
+      type: Number, // Number will represent milliseconds
       default: Date.now(),
       select: false
     },
@@ -70,7 +78,7 @@ const userSchema = new Schema(
       select: false
     },
     authTokenTimeOut: {
-      type: Date,
+      type: Number, // No. will be representing the milliseconds at which token timesOut
       default: undefined,
       select: false
     },
@@ -92,16 +100,21 @@ userSchema.virtual('reviews', {
   foreignField: 'user'
 });
 
-userSchema.pre(/^find/, function (next) {
-  this.find({ isDeleted: { $ne: true } });
+// @ts-ignore
+userSchema.pre(/^find/, function (next: HookNextFunction) {
+  // @ts-ignore
+  const doc: Model<UserDocumentType> = this;
+  doc.find({ isDeleted: { $ne: true } });
   next();
 });
 
-userSchema.pre('save', async function (next) {
-  if (this.isModified('password')) {
+userSchema.pre('save', async function (next: HookNextFunction) {
+  // @ts-ignore
+  const user: MongooseDocument & UserDocumentType = this;
+  if (user.isModified('password')) {
     try {
-      this.password = await bcrypt.hash(this.password, 10);
-      this.confirmPassword = undefined;
+      user.password = await bcrypt.hash(user.password, 10);
+      user.confirmPassword = undefined;
     } catch (e) {
       console.log(e);
     }
@@ -110,8 +123,8 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.methods.comparePassword = async function (
-  candidatePassword,
-  hashedPassword
+  candidatePassword: string,
+  hashedPassword: string
 ) {
   return await bcrypt.compare(candidatePassword, hashedPassword);
 };
@@ -131,7 +144,7 @@ userSchema.methods.createPasswordResetToken = function () {
   const token = crypto.createHash('sha256').update(randomString).digest('hex');
 
   this.passwordResetToken = token;
-  this.passwordResetTokenTimeOut = Date.now() + 10 * 60 * 1000;
+  this.passwordResetTokenTimeOut = Date.now() + 10 * 60 * 1000; // 10 minutes
 
   return randomString;
 };
@@ -140,14 +153,17 @@ userSchema.methods.createPasswordResetToken = function () {
 // then it means that the token is old. we have to login
 // again to get new token so that
 // token.iat > user.changePasswordAt
-userSchema.methods.isAfter = function (JWTTimeStamp) {
-  if (this.changePasswordAt) {
+userSchema.methods.isAfter = function (
+  this: UserDocumentType,
+  JWTTimeStamp: number
+) {
+  if (this.changedPasswordAt) {
     // iat is in seconds so we convert user.changePasswordAt to seconds
-    return Date.parse(this.changePasswordAt) / 1000 > JWTTimeStamp;
+    return this.changedPasswordAt / 1000 > JWTTimeStamp;
   }
   return false;
 };
 
-const UserModel = model('users', userSchema);
+const UserModel = model<UserDocumentType>('users', userSchema);
 
-module.exports = UserModel;
+export default UserModel;
