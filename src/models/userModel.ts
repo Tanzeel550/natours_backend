@@ -33,7 +33,7 @@ const userSchema: Schema = new Schema(
       type: String,
       required: [true, 'Confirm Password is required'],
       validate: {
-        validator: function (value: string) {
+        validator: function (this: UserDocumentType, value: string) {
           return value === this.password;
         },
         message: 'Your passwords do not match!'

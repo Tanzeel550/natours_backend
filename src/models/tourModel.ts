@@ -1,5 +1,4 @@
-const { Schema, model } = require('mongoose');
-const slugify = require('slugify');
+import { Schema, model } from 'mongoose';
 
 const tourSchema = new Schema(
   {

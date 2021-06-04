@@ -1,7 +1,7 @@
-const express = require('express');
-const authHandler = require('../handlers/authHandler');
-const userHandler = require('../handlers/userHandler');
-const multerHandler = require('../handlers/multerHandler');
+import express from 'express';
+import * as authHandler from '../handlers/authHandler';
+import * as userHandler from '../handlers/userHandler';
+import * as multerHandler from '../handlers/multerHandler';
 
 const userRouter = express.Router();
 
@@ -25,7 +25,7 @@ userRouter.get('/getMe', userHandler.getMe);
 userRouter.put('/updatePassword', authHandler.updatePassword);
 userRouter.put(
   '/updateMe',
-  authHandler.restrictTo('user', 'admin'),
+  authHandler.restrictTo(['user', 'admin']),
   multerHandler.userSingleUpload,
   multerHandler.resizeUserPhoto,
   userHandler.updateMe
@@ -34,7 +34,7 @@ userRouter.put(
 userRouter.delete('/deleteMe', userHandler.deleteMe);
 
 // <------------- Admin Routes ----------->
-userRouter.use(authHandler.restrictTo('admin'));
+userRouter.use(authHandler.restrictTo(['admin']));
 userRouter.route('/').get(userHandler.getAllUsers);
 userRouter
   .route('/:id')
@@ -42,4 +42,4 @@ userRouter
   .get(userHandler.getUserById)
   .delete(userHandler.deleteUser);
 
-module.exports = userRouter;
+export default userRouter;

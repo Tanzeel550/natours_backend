@@ -1,7 +1,7 @@
-const express = require('express');
-const authHandler = require('../handlers/authHandler');
-const tourHandler = require('../handlers/tourHandler');
-const bookingHandler = require('../handlers/bookingHandler');
+import express from 'express';
+import * as authHandler from '../handlers/authHandler';
+import * as tourHandler from '../handlers/tourHandler';
+import * as bookingHandler from '../handlers/bookingHandler';
 
 const bookingsRouter = express.Router({
   mergeParams: true
@@ -15,7 +15,7 @@ bookingsRouter.use(authHandler.protect);
 // create session
 bookingsRouter.post(
   '/tour/:id/create-session',
-  tourHandler.getTour,
+  tourHandler.getTourById,
   bookingHandler.createSession
 );
 
@@ -29,4 +29,4 @@ bookingsRouter.get('/my-booked-tours', bookingHandler.getMyBookedTours);
 //     bookingHandler.createBookingByTourAndUser
 // );
 
-module.exports = bookingsRouter;
+export default bookingsRouter;

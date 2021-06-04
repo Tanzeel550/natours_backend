@@ -1,7 +1,6 @@
-const express = require('express');
-const reviewHandler = require('../handlers/reviewHandler');
-const authHandler = require('../handlers/authHandler');
-const tourHandler = require('../handlers/tourHandler');
+import express from 'express';
+import * as reviewHandler from '../handlers/reviewHandler';
+import * as authHandler from '../handlers/authHandler';
 
 const reviewRouter = express.Router({
   mergeParams: true
@@ -37,4 +36,4 @@ reviewRouter
     reviewHandler.deleteReview
   );
 
-module.exports = reviewRouter;
+export default reviewRouter;

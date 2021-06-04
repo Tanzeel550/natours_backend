@@ -1,3 +1,5 @@
+import { ConnectionOptions } from 'mongoose';
+
 const mongoose = require('mongoose');
 const app = require('./app');
 
@@ -6,26 +8,29 @@ const app = require('./app');
 let CONNECTION_STRING;
 
 if (process.env.NODE_ENV === 'PRODUCTION') {
-  CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING.replace(
+  CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING!!.replace(
     '<password>',
-    process.env.DATABASE_PASSWORD
+    process.env.DATABASE_PASSWORD!!
   );
 } else {
   CONNECTION_STRING = process.env.MONGODB_URL;
 }
 
+const params: ConnectionOptions = {
+  // @ts-ignore
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+  useFindAndModify: false
+};
+
 mongoose
-  .connect(CONNECTION_STRING, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-  })
+  .connect(CONNECTION_STRING, params)
   .then(() => {
     console.log('App has connected to the database');
   })
-  .catch(err => {
-    console.log(err);
+  .catch((err: Error) => {
+    console.error(err);
   });
 
 // Starting the server
@@ -35,7 +40,7 @@ const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-process.on('unhandledRejection', err => {
+process.on('unhandledRejection', (err: Error) => {
   console.log('UNHANDLED REJECTION 👺 SHUTTING DOWN GRACEFULLY');
   console.log(err.name, err.message);
   server.close(() => {

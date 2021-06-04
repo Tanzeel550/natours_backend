@@ -1,41 +1,50 @@
-const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/AppError');
-const UserModel = require('../models/userModel');
-const factoryFunctions = require('./factoryFunctions');
+import catchAsync from '../utils/catchAsync';
+import AppError from '../utils/AppError';
+import UserModel from '../models/userModel';
+import * as factoryFunctions from './factoryFunctions';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 
-exports.updateMe = catchAsync(async (req, res, next) => {
-  let { user, body } = req;
-  if (body.password || body.confirmPassword)
-    return next(new AppError('This route is not for updating password', 404));
+export const updateMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let { body } = req;
+    if (body.password || body.confirmPassword)
+      return next(new AppError('This route is not for updating password', 404));
 
-  const updatedUser = await UserModel.findByIdAndUpdate(user.id, req.body, {
-    runValidators: true,
-    new: true
-  }).select('-password -createdAt -changePasswordAt');
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      req.body.user.id,
+      req.body,
+      {
+        runValidators: true,
+        new: true
+      }
+    ).select('-password -createdAt -changePasswordAt');
 
+    res.status(200).json({
+      status: 'Success',
+      data: updatedUser
+    });
+  }
+);
+
+export const deleteMe = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let user = req.body.user;
+    await user.updateOne({ isDeleted: true }, { runValidators: true });
+    res.status(204).json({
+      status: 'Success'
+    });
+  }
+);
+
+export const getMe: RequestHandler = (req, res) => {
   res.status(200).json({
     status: 'Success',
-    data: updatedUser
-  });
-});
-
-exports.deleteMe = catchAsync(async (req, res, next) => {
-  let user = req.user;
-  await user.updateOne({ isDeleted: true }, { runValidators: true });
-  res.status(204).json({
-    status: 'Success'
-  });
-});
-
-exports.getMe = (req, res) => {
-  res.status(200).json({
-    status: 'Success',
-    user: req.user
+    user: req.body.user
   });
 };
 
-exports.getAllUsers = factoryFunctions.getAll(UserModel);
-exports.getUserById = factoryFunctions.getOne(UserModel);
-exports.deleteUser = factoryFunctions.deleteOne(UserModel);
-exports.updateUser = factoryFunctions.updateOne(UserModel);
-exports.checkBody = factoryFunctions.checkBody();
+export const getAllUsers = factoryFunctions.getAll(UserModel);
+export const getUserById = factoryFunctions.getOne(UserModel);
+export const deleteUser = factoryFunctions.deleteOne(UserModel);
+export const updateUser = factoryFunctions.updateOne(UserModel);
+export const checkBody = factoryFunctions.checkBody();

@@ -86,7 +86,7 @@ export const verifyToken: RequestHandler = catchAsync(
     generateToken(req.body.user as UserDocumentType, res)
 );
 
-export const restrictTo = (...args: [string]): RequestHandler => {
+export const restrictTo = (args: [string]): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.body.user as UserDocumentType;
     const isAuth = args.includes(user.role);

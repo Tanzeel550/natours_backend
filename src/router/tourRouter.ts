@@ -1,9 +1,8 @@
-const express = require('express');
-const tourHandler = require('../handlers/tourHandler');
-const authHandler = require('../handlers/authHandler');
-const reviewRouter = require('./reviewRouter');
-const multerHandler = require('../handlers/multerHandler');
-const stripeHandler = require('../handlers/bookingHandler');
+import express from 'express';
+import * as tourHandler from '../handlers/tourHandler';
+import * as authHandler from '../handlers/authHandler';
+import reviewRouter from './reviewRouter';
+import * as multerHandler from '../handlers/multerHandler';
 
 const tourRouter = express.Router();
 
@@ -31,7 +30,7 @@ tourRouter
   )
   .all(authHandler.protect, authHandler.restrictTo('admin'))
   .put(
-    tourHandler.getTour,
+    tourHandler.getTourById,
     multerHandler.tourMultipleUploads,
     multerHandler.uploadTourPhotos,
     tourHandler.updateTour
@@ -44,4 +43,4 @@ tourRouter
 
 tourRouter.use('/:tourId/reviews', reviewRouter);
 
-module.exports = tourRouter;
+export default tourRouter;

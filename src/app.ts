@@ -1,16 +1,16 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
+import express = require('express');
+import dotenv from 'dotenv';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
-const TourRouter = require('./router/tourRouter');
-const UserRouter = require('./router/userRouter');
-const ReviewRouter = require('./router/reviewRouter');
-const BookingRouter = require('./router/bookingsRouter');
-const globalErrorController = require('./handlers/errorHandler');
-const AppError = require('./utils/AppError');
-const { webHookCheckout } = require('./handlers/bookingHandler');
+import TourRouter from './router/tourRouter';
+import UserRouter from './router/userRouter';
+import ReviewRouter from './router/reviewRouter';
+import BookingRouter from './router/bookingsRouter';
+import globalErrorController from './handlers/errorHandler';
+import AppError from './utils/AppError';
+import { webHookCheckout } from './handlers/bookingHandler';
 
 dotenv.config({ path: `${__dirname}/config.env` });
 

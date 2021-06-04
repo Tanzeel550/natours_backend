@@ -3,14 +3,9 @@ import BookingModel from '../models/bookingModel';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import Stripe from 'stripe';
 import { UserDocumentType } from '../types/authTypes';
-import {
-  createOne,
-  deleteOne,
-  getAll,
-  getOne,
-  updateOne
-} from './factoryFunctions';
+import * as factoryFunctions from './factoryFunctions';
 import AppError from '../utils/AppError';
+import UserModel from '../models/userModel';
 
 const stripe = new Stripe(process.env.Stripe_SECRET_KEY!!);
 
@@ -99,7 +94,9 @@ const createBookingCheckout = async (sessionData: ICheckoutSession) => {
   // TODO: Make the following code work
   //  we need to figure out the type of the session data and write the following code accordingly
   const tour = sessionData.client_reference_id;
-  const user = await UserModel.findOne({ email: sessionData.customer_email });
+  const user: UserDocumentType | null = await UserModel.findOne({
+    email: sessionData.customer_email
+  });
   if (!user) {
     throw new AppError('No user found with this id', 404);
   }
@@ -133,8 +130,8 @@ export const webHookCheckout: RequestHandler = async (
   res.status(200).json({ received: true });
 };
 
-export const getAllBookings = getAll(BookingModel);
-export const getBookingById = getOne(BookingModel);
-export const createBooking = createOne(BookingModel);
-export const updateBooking = updateOne(BookingModel);
-export const deleteBooking = deleteOne(BookingModel);
+export const getAllBookings = factoryFunctions.getAll(BookingModel);
+export const getBookingById = factoryFunctions.getOne(BookingModel);
+export const createBooking = factoryFunctions.createOne(BookingModel);
+export const updateBooking = factoryFunctions.updateOne(BookingModel);
+export const deleteBooking = factoryFunctions.deleteOne(BookingModel);
