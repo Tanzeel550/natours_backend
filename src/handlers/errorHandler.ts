@@ -1,10 +1,5 @@
 import AppError from '../utils/AppError';
-import {
-  Request,
-  Response,
-  RequestHandler,
-  ErrorRequestHandler
-} from 'express';
+import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 
 const handleCastErrorDB = (err: any) => {
   // TODO: Fix the following errors
@@ -62,17 +57,17 @@ const sendErrorProd = (err: AppError, req: Request, res: Response) => {
   });
 };
 
+// Note: your error handler middleware MUST have 4 parameters: error, req, res, next. Otherwise your handler won't fire.
 const errorHandler: ErrorRequestHandler = (
   err: AppError,
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
   err.statusCode = err.statusCode || 500;
   err.message = err.message || 'Error';
 
-  if (process.env.NODE_ENV === 'DEVELOPMENT') {
-    sendErrorDev(err, req, res);
-  } else if (process.env.NODE_ENV === 'PRODUCTION') {
+  if (process.env.NODE_ENV === 'PRODUCTION') {
     let error = { ...err };
     error.message = err.message;
 
@@ -86,7 +81,9 @@ const errorHandler: ErrorRequestHandler = (
       error = handleValidationErrorDB(error);
 
     sendErrorProd(error, req, res);
+  } else {
+    sendErrorDev(err, req, res);
   }
 };
 
-export default errorHandler;
+export = errorHandler;

@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose';
+import { Document } from 'mongoose';
 
 interface UserType {
   name: string;
@@ -8,7 +8,7 @@ interface UserType {
   photo: string;
 }
 
-export interface UserDocumentType extends UserType, Document {
+export default interface UserDocumentType extends UserType, Document {
   confirmPassword?: string;
   passwordResetToken?: string;
   passwordResetTokenTimeOut?: number;

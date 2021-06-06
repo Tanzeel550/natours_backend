@@ -1,6 +1,9 @@
 src/dev-data
 node_modules
-*env
+src/config.env
+src/config_test.env
+src/config_prod.env
+
 .vscode
 .idea
 dist

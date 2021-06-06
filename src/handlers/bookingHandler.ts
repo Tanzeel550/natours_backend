@@ -2,7 +2,7 @@ import catchAsync from '../utils/catchAsync';
 import BookingModel from '../models/bookingModel';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import Stripe from 'stripe';
-import { UserDocumentType } from '../types/authTypes';
+import UserDocumentType from '../types/authTypes';
 import * as factoryFunctions from './factoryFunctions';
 import AppError from '../utils/AppError';
 import UserModel from '../models/userModel';

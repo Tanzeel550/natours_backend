@@ -1,6 +1,5 @@
-import { HookNextFunction, MongooseDocument } from 'mongoose';
-import { BookingDocumentType } from '../types/bookingTypes';
-import { Schema, model } from 'mongoose';
+import { HookNextFunction, model, Schema } from 'mongoose';
+import BookingDocumentType from '../types/bookingTypes';
 
 const bookingSchema = new Schema({
   tour: {
@@ -29,16 +28,26 @@ const bookingSchema = new Schema({
 
 bookingSchema.index({ user: 1, tour: 1 }, { unique: true });
 
-bookingSchema.pre(/^find/, function (next: HookNextFunction) {
+bookingSchema.pre(
   // @ts-ignore
-  const doc: MongooseDocument & BookingDocumentType = this;
-  doc.populate('tour').populate({
-    path: 'user',
-    select: 'name email role'
-  });
-  next();
-});
+  /^find/,
+  function (this: BookingDocumentType, next: HookNextFunction) {
+    this.populate('tour').populate({
+      path: 'user',
+      select: 'name email role'
+    });
+    next();
+  }
+);
+
+bookingSchema.pre(
+  'find',
+  function (this: BookingDocumentType, next: HookNextFunction) {
+    this.price = this.price / 100; // converting cents to dollars
+    next();
+  }
+);
 
 const BookingModel = model<BookingDocumentType>('bookings', bookingSchema);
 
-export default BookingModel;
+export = BookingModel;

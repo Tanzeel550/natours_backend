@@ -4,7 +4,7 @@ import catchAsync from '../utils/catchAsync';
 import jsonWebToken from 'jsonwebtoken';
 import AppError from '../utils/AppError';
 import sendEmail from '../utils/sendEmail';
-import { UserDocumentType } from '../types/authTypes';
+import UserDocumentType from '../types/authTypes';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 const generateToken = (user: UserDocumentType, res: Response) => {
@@ -86,7 +86,7 @@ export const verifyToken: RequestHandler = catchAsync(
     generateToken(req.body.user as UserDocumentType, res)
 );
 
-export const restrictTo = (args: [string]): RequestHandler => {
+export const restrictTo = (...args: Array<string>): RequestHandler => {
   return (req: Request, res: Response, next: NextFunction) => {
     const user = req.body.user as UserDocumentType;
     const isAuth = args.includes(user.role);

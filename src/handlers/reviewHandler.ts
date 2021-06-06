@@ -1,4 +1,4 @@
-import { NextFunction, Response, Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 const ReviewModel = require('../models/reviewModel');
 const TourModel = require('../models/tourModel');

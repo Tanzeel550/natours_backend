@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+
 const TourModel = require('../models/tourModel');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');

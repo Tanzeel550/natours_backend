@@ -1,5 +1,4 @@
-import express = require('express');
-import dotenv from 'dotenv';
+import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -12,7 +11,8 @@ import globalErrorController from './handlers/errorHandler';
 import AppError from './utils/AppError';
 import { webHookCheckout } from './handlers/bookingHandler';
 
-dotenv.config({ path: `${__dirname}/config.env` });
+// import dotenv from 'dotenv';
+// dotenv.config({ path: `${__dirname}/config.env` });
 
 // Creating the express app
 const app = express();
@@ -61,4 +61,4 @@ app.all('*', (req, res, next) =>
 
 app.use(globalErrorController);
 
-module.exports = app;
+export = app;

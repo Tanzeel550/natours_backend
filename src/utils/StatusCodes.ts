@@ -73,4 +73,4 @@ const StatusCodes = {
   NETWORK_AUTHENTICATION_REQUIRED: 511
 };
 
-export default StatusCodes;
+export = StatusCodes;

@@ -1,9 +1,9 @@
-import { UserDocumentType } from '../types/authTypes';
+import UserDocumentType from '../types/authTypes';
 const nodemailer = require('nodemailer');
 const htmlToText = require('html-to-text');
 const pug = require('pug');
 
-export default class Email {
+export = class Email {
   private readonly to: string;
   private readonly firstName: string;
   private readonly url: string;
@@ -92,4 +92,4 @@ export default class Email {
       'Click to Reset Password'
     );
   }
-}
+};

@@ -25,7 +25,7 @@ userRouter.get('/getMe', userHandler.getMe);
 userRouter.put('/updatePassword', authHandler.updatePassword);
 userRouter.put(
   '/updateMe',
-  authHandler.restrictTo(['user', 'admin']),
+  authHandler.restrictTo('user', 'admin'),
   multerHandler.userSingleUpload,
   multerHandler.resizeUserPhoto,
   userHandler.updateMe
@@ -34,7 +34,7 @@ userRouter.put(
 userRouter.delete('/deleteMe', userHandler.deleteMe);
 
 // <------------- Admin Routes ----------->
-userRouter.use(authHandler.restrictTo(['admin']));
+userRouter.use(authHandler.restrictTo('admin'));
 userRouter.route('/').get(userHandler.getAllUsers);
 userRouter
   .route('/:id')
@@ -42,4 +42,4 @@ userRouter
   .get(userHandler.getUserById)
   .delete(userHandler.deleteUser);
 
-export default userRouter;
+export = userRouter;

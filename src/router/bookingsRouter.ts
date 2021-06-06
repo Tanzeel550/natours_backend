@@ -29,4 +29,4 @@ bookingsRouter.get('/my-booked-tours', bookingHandler.getMyBookedTours);
 //     bookingHandler.createBookingByTourAndUser
 // );
 
-export default bookingsRouter;
+export = bookingsRouter;

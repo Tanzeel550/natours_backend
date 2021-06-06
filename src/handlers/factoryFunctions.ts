@@ -1,12 +1,13 @@
 import catchAsync from '../utils/catchAsync';
 import APIFeatures from '../utils/APIFeatures';
 import AppError from '../utils/AppError';
-import { Model, Document, DocumentQuery } from 'mongoose';
+import { Document, DocumentQuery, Model } from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
 
-export const getAll = <T extends Document>(Model: Model<T>) => {
+export const getAll = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    let query = new APIFeatures(Model.find(), req.query)
+    console.log('Request received');
+    let query = new APIFeatures<T>(model.find(), req.query)
       .filter()
       .limitFields()
       .paginationAndLimitation()
@@ -23,18 +24,19 @@ export const getAll = <T extends Document>(Model: Model<T>) => {
   });
 };
 
-export const getOne = <T extends Document>(Model: Model<T>) => {
+export const getOne = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    let query: DocumentQuery<Document | null, Document> = Model.findById(
+    let query: DocumentQuery<Document | null, Document> = model.findById(
       req.params.id
     );
 
     // req.body.toBePopulatedWith is an array of strings
-    if (req.body.toBePopulatedWith) {
-      req.body.toBePopulatedWith.forEach((item: string) =>
-        query.populate(item)
-      );
-    }
+    // if (req.body.toBePopulatedWith) {
+    //   req.body.toBePopulatedWith.forEach((item: string) =>
+    //     query.populate(item)
+    //   );
+    // }
+
     const doc = await query;
     if (!doc) {
       return next(new AppError('No such document found with this ID', 404));
@@ -49,7 +51,14 @@ export const getOne = <T extends Document>(Model: Model<T>) => {
   });
 };
 
-export const createOne = <T extends Document>(Model: Model<T>) => {
+// export const populateWith = (...args: [string]) => {
+//   return (req: Request, res: Response, next: NextFunction) => {
+//     req.body.toBePopulatedWith = args;
+//     next();
+//   };
+// };
+
+export const createOne = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const doc = await model.create(req.body);
     res.status(200).json({
@@ -61,7 +70,7 @@ export const createOne = <T extends Document>(Model: Model<T>) => {
   });
 };
 
-export const updateOne = <T extends Document>(Model: Model<T>) => {
+export const updateOne = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const doc = await model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -76,7 +85,7 @@ export const updateOne = <T extends Document>(Model: Model<T>) => {
   });
 };
 
-export const deleteOne = <T extends Document>(Model: Model<T>) => {
+export const deleteOne = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     await model.findByIdAndRemove(req.params.id);
     res.status(204).json({});
@@ -89,11 +98,4 @@ export const checkBody = () => {
       return next(new AppError('Body is No provided', 404));
     next();
   });
-};
-
-export const populateWith = (...args: [string]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    req.body.toBePopulatedWith = args;
-    next();
-  };
 };

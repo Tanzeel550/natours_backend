@@ -3,8 +3,8 @@ import catchAsync from '../utils/catchAsync';
 import sharp from 'sharp';
 import slugify from 'slugify';
 import AppError from '../utils/AppError';
-import { Request, Response, NextFunction } from 'express';
-import { UserDocumentType } from '../types/authTypes';
+import { NextFunction, Request, Response } from 'express';
+import UserDocumentType from '../types/authTypes';
 
 // const storage = multer.diskStorage({
 //     destination: function (req: Request, file, cb) {

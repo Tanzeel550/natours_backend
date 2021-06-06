@@ -36,4 +36,4 @@ reviewRouter
     reviewHandler.deleteReview
   );
 
-export default reviewRouter;
+export = reviewRouter;

@@ -3,10 +3,9 @@ import {
   Model,
   model,
   MongooseDocument,
-  Query,
   Schema
 } from 'mongoose';
-import { UserDocumentType } from '../types/authTypes';
+import UserDocumentType from '../types/authTypes';
 import validator from 'validator';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
@@ -31,7 +30,7 @@ const userSchema: Schema = new Schema(
     },
     confirmPassword: {
       type: String,
-      required: [true, 'Confirm Password is required'],
+      // required: [true, 'Confirm Password is required'],
       validate: {
         validator: function (this: UserDocumentType, value: string) {
           return value === this.password;
@@ -100,15 +99,14 @@ userSchema.virtual('reviews', {
   foreignField: 'user'
 });
 
-// Todo: Change the type of pre in mongoose.index.d.ts to (string | RegExp)
-//  so that we can also use RegExp or use @ts-ignore
-
-userSchema.pre(/^find/, function (next: HookNextFunction) {
+userSchema.pre(
   // @ts-ignore
-  const doc: Model<UserDocumentType> = this;
-  doc.find({ isDeleted: { $ne: true } });
-  next();
-});
+  /^find/,
+  function (this: Model<UserDocumentType>, next: HookNextFunction) {
+    this.find({ isDeleted: { $ne: true } });
+    next();
+  }
+);
 
 userSchema.pre('save', async function (next: HookNextFunction) {
   // @ts-ignore
@@ -168,4 +166,4 @@ userSchema.methods.isAfter = function (
 
 const UserModel = model<UserDocumentType>('users', userSchema);
 
-export default UserModel;
+export = UserModel;

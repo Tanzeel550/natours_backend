@@ -43,4 +43,4 @@ tourRouter
 
 tourRouter.use('/:tourId/reviews', reviewRouter);
 
-export default tourRouter;
+export = tourRouter;

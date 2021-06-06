@@ -1,4 +1,5 @@
-import { Schema, model } from 'mongoose';
+import { HookNextFunction, model, Schema } from 'mongoose';
+import TourDocumentType from '../types/tourTypes';
 
 const tourSchema = new Schema(
   {
@@ -29,7 +30,7 @@ const tourSchema = new Schema(
       min: [1, 'Ratings Average must be greater than 1'],
       max: [5, 'Ratings Average must be lesser than 5'],
       default: 4.5,
-      set: val => Math.round(val * 10) / 10
+      set: (val: number) => Math.round(val * 10) / 10
     },
     ratingsQuantity: {
       type: Number,
@@ -42,7 +43,7 @@ const tourSchema = new Schema(
     priceDiscount: {
       type: Number,
       validate: {
-        validator: function (val) {
+        validator: function (this: TourDocumentType, val: number) {
           return val < this.price;
         },
         message: 'Price Discount must not be greater han price'
@@ -89,7 +90,7 @@ const tourSchema = new Schema(
     ],
     guides: [
       {
-        type: Schema.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'users'
       }
     ]
@@ -112,11 +113,19 @@ tourSchema.virtual('reviews', {
   foreignField: 'tour'
 });
 
-tourSchema.pre(/^find/, function (next) {
-  this.populate('guides');
-  this.populate('reviews');
-  next();
-});
+tourSchema.pre(
+  // @ts-ignore
+  /^find/,
+  function (this: TourDocumentType, next: HookNextFunction) {
+    this.populate({
+      path: 'guides',
+      select:
+        '-isDeleted -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
+    });
+    this.populate('reviews');
+    next();
+  }
+);
 
 // tourSchema.virtual("createdAt").get(function () {
 //     return this._id.getTimestamp()
@@ -131,4 +140,4 @@ tourSchema.pre(/^find/, function (next) {
 
 const TourModel = model('tours', tourSchema);
 
-module.exports = TourModel;
+export = TourModel;
