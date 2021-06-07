@@ -6,10 +6,10 @@
   "scripts": {
     "start": "node dist/server.js",
     "compile": "tsc --watch",
-    "run": "env-cmd -f ./src/config.env nodemon dist/server.js",
-    "runInProductionMode": "env-cmd -f ./src/config_prod.env nodemon dist/server.js",
-    "test": "env-cmd -f ./src/config_test.env jest",
-    "testInProductionMode": "env-cmd -f ./src/config_prod.env jest"
+    "run": "env-cmd -f config.env nodemon dist/server.js",
+    "runInProductionMode": "env-cmd -f config_prod.env nodemon dist/server.js",
+    "test": "env-cmd -f config_test.env jest",
+    "testInProductionMode": "env-cmd -f config_prod.env jest"
   },
   "keywords": [],
   "author": "",

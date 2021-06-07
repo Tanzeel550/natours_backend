@@ -1,8 +1,8 @@
 src/dev-data
 node_modules
-src/config.env
-src/config_test.env
-src/config_prod.env
+config.env
+config_test.env
+config_prod.env
 
 .vscode
 .idea
