@@ -52,7 +52,7 @@ class APIFeatures<T extends Document> {
   paginationAndLimitation() {
     const pageNo =
       (Number((this.queryParams as { page: string }).page) || 1) - 1;
-    const limit = Number((this.queryParams as { limit: string }).limit) || 5;
+    const limit = Number((this.queryParams as { limit: string }).limit) || 10;
     this.query = this.query.limit(limit).skip(pageNo * limit);
     return this;
   }

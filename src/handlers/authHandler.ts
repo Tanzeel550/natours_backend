@@ -103,17 +103,12 @@ export const sendSignUpEmail: RequestHandler = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password, confirmPassword, linkToRedirect } = req.body;
 
-    let user;
-
-    try {
-      user = await UserModel.create({ name, email, password, confirmPassword });
-    } catch (e) {
-      if (e.name === 'MongoError' && e.code === 11000)
-        return next(
-          new AppError(`${email} already exists. Please try a new one!`, 404)
-        );
-      throw new AppError(`${e.name} - ${e.message}`, 404);
-    }
+    let user = await UserModel.create({
+      name,
+      email,
+      password,
+      confirmPassword
+    });
 
     const authToken = user.createAuthToken();
     // if i don't use { validateBeforeSave: false } then it checks for all the fields again

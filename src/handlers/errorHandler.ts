@@ -1,13 +1,13 @@
 import AppError from '../utils/AppError';
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
+import { MongoError } from 'mongodb';
 
-const handleCastErrorDB = (err: any) => {
-  // TODO: Fix the following errors
+const handleCastErrorDB = (err: any): AppError => {
   const message = `Invalid ${err.path}: ${err.value}.`;
   return new AppError(message, 400);
 };
 
-const handleDuplicateFieldsDB = (err: any) => {
+const handleDuplicateFieldsDB = (err: any): AppError => {
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
   console.log(value);
 
@@ -15,7 +15,7 @@ const handleDuplicateFieldsDB = (err: any) => {
   return new AppError(message, 400);
 };
 
-const handleValidationErrorDB = (err: any) => {
+const handleValidationErrorDB = (err: any): AppError => {
   const errors = Object.values(err.errors).map((el: any) => el.message);
 
   const message = `Invalid input data. Please correct your following inputs ${errors.join(
@@ -24,11 +24,18 @@ const handleValidationErrorDB = (err: any) => {
   return new AppError(message, 400);
 };
 
-const handleJWTError = () =>
-  new AppError('Invalid token. Please log in again!', 401);
+const handleJWTError = (): AppError =>
+  new AppError('Invalid credentials. Please log in again!', 401);
 
-const handleJWTExpiredError = () =>
-  new AppError('Your token has expired! Please log in again.', 401);
+const handleJWTExpiredError = (): AppError =>
+  new AppError('Your login session has expired! Please log in again.', 401);
+
+const handleMongoError = (error: any): AppError => {
+  return new AppError(
+    `${error.keyValue.email} already exists. Please try a new one`,
+    404
+  );
+};
 
 const sendErrorDev = (err: AppError, req: Request, res: Response) => {
   return res.status(err.statusCode).json({
@@ -59,7 +66,7 @@ const sendErrorProd = (err: AppError, req: Request, res: Response) => {
 
 // Note: your error handler middleware MUST have 4 parameters: error, req, res, next. Otherwise your handler won't fire.
 const errorHandler: ErrorRequestHandler = (
-  err: AppError,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
@@ -71,6 +78,8 @@ const errorHandler: ErrorRequestHandler = (
     let error = { ...err };
     error.message = err.message;
 
+    if (error.name === 'MongoError' && error.code === 11000)
+      error = handleMongoError(error);
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     if (error.statusCode === 11000) error = handleDuplicateFieldsDB(error);
     if (error.name === 'ValidationError')

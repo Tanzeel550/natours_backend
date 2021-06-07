@@ -3,10 +3,10 @@ import APIFeatures from '../utils/APIFeatures';
 import AppError from '../utils/AppError';
 import { Document, DocumentQuery, Model } from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
+import chalk from 'chalk';
 
 export const getAll = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    console.log('Request received');
     let query = new APIFeatures<T>(model.find(), req.query)
       .filter()
       .limitFields()
@@ -26,18 +26,14 @@ export const getAll = <T extends Document>(model: Model<T>) => {
 
 export const getOne = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    let query: DocumentQuery<Document | null, Document> = model.findById(
-      req.params.id
-    );
+    let doc: any;
 
-    // req.body.toBePopulatedWith is an array of strings
-    // if (req.body.toBePopulatedWith) {
-    //   req.body.toBePopulatedWith.forEach((item: string) =>
-    //     query.populate(item)
-    //   );
-    // }
+    // the following try-catch is used for Cast Error
+    // https://mongoosejs.com/docs/api/error.html#error_Error-CastError
+    try {
+      doc = await model.findById(req.params.id);
+    } catch (e) {}
 
-    const doc = await query;
     if (!doc) {
       return next(new AppError('No such document found with this ID', 404));
     }
@@ -48,6 +44,12 @@ export const getOne = <T extends Document>(model: Model<T>) => {
         data: doc
       }
     });
+    // req.body.toBePopulatedWith is an array of strings
+    // if (req.body.toBePopulatedWith) {
+    //   req.body.toBePopulatedWith.forEach((item: string) =>
+    //     query.populate(item)
+    //   );
+    // }
   });
 };
 
