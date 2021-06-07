@@ -74,7 +74,7 @@ const errorHandler: ErrorRequestHandler = (
   err.statusCode = err.statusCode || 500;
   err.message = err.message || 'Error';
 
-  if (process.env.NODE_ENV === 'PRODUCTION') {
+  if (process.env.NODE_ENV === 'production') {
     let error = { ...err };
     error.message = err.message;
 

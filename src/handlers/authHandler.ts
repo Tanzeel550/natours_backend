@@ -82,7 +82,7 @@ export const protect: RequestHandler = catchAsync(
 
 // This is only for verifying user from frontend if the token stored in frontend is right!
 export const verifyToken: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) =>
+  async (req: Request, res: Response) =>
     generateToken(req.body.user as UserDocumentType, res)
 );
 
@@ -100,7 +100,7 @@ export const restrictTo = (...args: Array<string>): RequestHandler => {
 };
 
 export const sendSignUpEmail: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const { name, email, password, confirmPassword, linkToRedirect } = req.body;
 
     let user = await UserModel.create({
@@ -187,25 +187,24 @@ const acceptUserAuthTokens = async (userToken: string) => {
 };
 
 export const signUp: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const user = await acceptUserAuthTokens(req.params.token);
-    // TODO: correct the link
-    await new sendEmail(user, `/upload-photo`).sendWelcome();
+    await new sendEmail(
+      user,
+      `${process.env.BACKEND_URL}/upload-photo`
+    ).sendWelcome();
     generateToken(user, res);
   }
 );
 
 export const login: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     generateToken(await acceptUserAuthTokens(req.params.token), res);
   }
 );
 
-export const logout: RequestHandler = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => res.status(200).json({ status: 'Success', token: '' });
+export const logout: RequestHandler = (req: Request, res: Response) =>
+  res.status(200).json({ status: 'Success', token: '' });
 
 export const forgotPassword: RequestHandler = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -219,10 +218,12 @@ export const forgotPassword: RequestHandler = catchAsync(
     //      forgotPasswordToken should be encrypted before saving it to the database.
     //      there should be a separate field for passwordResetTokenTimeOut which should be 10 minutes after the time token is created!
     const token = user.createPasswordResetToken();
-    user.save();
+    await user.save();
 
-    // TODO: correct the link
-    await new sendEmail(user, `/reset-password/${token}`).sendPasswordReset();
+    await new sendEmail(
+      user,
+      `${process.env.BACKEND_URL}/reset-password/${token}`
+    ).sendPasswordReset();
 
     res.status(200).json({
       status: 'Success',

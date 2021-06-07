@@ -2,7 +2,7 @@ import mongoose, { ConnectionOptions } from 'mongoose';
 
 let CONNECTION_STRING;
 
-if (process.env.NODE_ENV === 'PRODUCTION') {
+if (process.env.NODE_ENV === 'production') {
   CONNECTION_STRING = process.env.DATABASE_CONNECTION_STRING!!.replace(
     '<password>',
     process.env.DATABASE_PASSWORD!!

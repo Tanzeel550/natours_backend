@@ -37,7 +37,7 @@ test('get one tour', (done: DoneCallback) => {
 });
 
 test('get tour with invalid id', () => {
-  if (process.env.NODE_ENV === 'PRODUCTION') {
+  if (process.env.NODE_ENV === 'production') {
   }
   request(app)
     .get(`/api/v1/tours/41224d776a326fb40f000001`)

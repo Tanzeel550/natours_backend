@@ -58,7 +58,7 @@ test('get one tour', (done) => {
     });
 });
 test('get tour with invalid id', () => {
-    if (process.env.NODE_ENV === 'PRODUCTION') {
+    if (process.env.NODE_ENV === 'production') {
     }
     supertest_1.default(app_1.default)
         .get(`/api/v1/tours/41224d776a326fb40f000001`)

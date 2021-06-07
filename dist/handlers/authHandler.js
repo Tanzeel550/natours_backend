@@ -51,7 +51,7 @@ exports.protect = catchAsync_1.default(async (req, res, next) => {
     req.body.user = user;
     next();
 });
-exports.verifyToken = catchAsync_1.default(async (req, res, next) => generateToken(req.body.user, res));
+exports.verifyToken = catchAsync_1.default(async (req, res) => generateToken(req.body.user, res));
 const restrictTo = (...args) => {
     return (req, res, next) => {
         const user = req.body.user;
@@ -65,7 +65,7 @@ const restrictTo = (...args) => {
     };
 };
 exports.restrictTo = restrictTo;
-exports.sendSignUpEmail = catchAsync_1.default(async (req, res, next) => {
+exports.sendSignUpEmail = catchAsync_1.default(async (req, res) => {
     const { name, email, password, confirmPassword, linkToRedirect } = req.body;
     let user = await userModel_1.default.create({
         name,
@@ -117,15 +117,15 @@ const acceptUserAuthTokens = async (userToken) => {
     await user.save({ validateBeforeSave: false });
     return user;
 };
-exports.signUp = catchAsync_1.default(async (req, res, next) => {
+exports.signUp = catchAsync_1.default(async (req, res) => {
     const user = await acceptUserAuthTokens(req.params.token);
-    await new sendEmail_1.default(user, `/upload-photo`).sendWelcome();
+    await new sendEmail_1.default(user, `${process.env.BACKEND_URL}/upload-photo`).sendWelcome();
     generateToken(user, res);
 });
-exports.login = catchAsync_1.default(async (req, res, next) => {
+exports.login = catchAsync_1.default(async (req, res) => {
     generateToken(await acceptUserAuthTokens(req.params.token), res);
 });
-const logout = (req, res, next) => res.status(200).json({ status: 'Success', token: '' });
+const logout = (req, res) => res.status(200).json({ status: 'Success', token: '' });
 exports.logout = logout;
 exports.forgotPassword = catchAsync_1.default(async (req, res, next) => {
     const { email } = req.body;
@@ -133,8 +133,8 @@ exports.forgotPassword = catchAsync_1.default(async (req, res, next) => {
     if (!email || !user)
         return next(new AppError_1.default('Please provide required Email!', 404));
     const token = user.createPasswordResetToken();
-    user.save();
-    await new sendEmail_1.default(user, `/reset-password/${token}`).sendPasswordReset();
+    await user.save();
+    await new sendEmail_1.default(user, `${process.env.BACKEND_URL}/reset-password/${token}`).sendPasswordReset();
     res.status(200).json({
         status: 'Success',
         message: 'Check your email for password reset!'
