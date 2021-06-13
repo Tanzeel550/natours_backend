@@ -32,6 +32,7 @@ userRouter.get('/login/:token', authHandler.login);
 userRouter.get('/signup/:token', authHandler.signUp);
 userRouter.post('/forgotPassword', authHandler.forgotPassword);
 userRouter.get('/resetPassword/:token', authHandler.resetPassword);
+userRouter.post('/simpleLogin786', authHandler.simpleLogin);
 userRouter.use(authHandler.protect);
 userRouter.post('/verifyToken', authHandler.verifyToken);
 userRouter.get('/logout', authHandler.logout);

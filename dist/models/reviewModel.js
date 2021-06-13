@@ -71,7 +71,7 @@ reviewSchema.statics.setRatings = async function (tourID) {
 reviewSchema.pre(/^find/, function (next) {
     this.populate({
         path: 'user',
-        select: '-__v -isDeleted -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
+        select: '-__v -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
     });
     next();
 });

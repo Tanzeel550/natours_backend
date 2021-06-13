@@ -12,9 +12,7 @@ exports.createReview = factoryFunctions.createOne(ReviewModel);
 exports.updateReview = factoryFunctions.updateOne(ReviewModel);
 exports.deleteReview = factoryFunctions.deleteOne(ReviewModel);
 exports.setTourAndUser = catchAsync(async (req, res, next) => {
-    req.body.tour = req.body.tour || req.params.tourId;
-    if (!(await TourModel.findById(req.body.tour)))
-        return next(new Error('No tour found with this ID!'));
-    req.body.user = req.body.user || req.body.user.id;
+    req.body.tour = req.body.tour.id || req.params.tourId;
+    req.body.user = req.body.user.id;
     next();
 });

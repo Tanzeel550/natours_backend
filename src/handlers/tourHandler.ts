@@ -1,4 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { IGetTourInfoRequest } from '../types/tourTypes';
 
 const TourModel = require('../models/tourModel');
 const AppError = require('../utils/AppError');
@@ -13,6 +14,15 @@ export const getTourById = factoryFunctions.getOne(TourModel);
 export const createTour = factoryFunctions.createOne(TourModel);
 export const updateTour = factoryFunctions.updateOne(TourModel);
 export const deleteTour = factoryFunctions.deleteOne(TourModel);
+
+export const setTourAtRequest: RequestHandler = catchAsync(
+  async (req: IGetTourInfoRequest, res: Response, next: NextFunction) => {
+    const tour = await TourModel.findById(req.params.id);
+    if (!tour) return next(new AppError('No such tour found', 404));
+    req.tour = tour;
+    next();
+  }
+);
 
 // TODO: Implement Tour Stats function
 export const getTourStats = catchAsync(

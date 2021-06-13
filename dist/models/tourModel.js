@@ -104,7 +104,7 @@ tourSchema.virtual('reviews', {
 tourSchema.pre(/^find/, function (next) {
     this.populate({
         path: 'guides',
-        select: '-isDeleted -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
+        select: '-passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
     });
     this.populate('reviews');
     next();

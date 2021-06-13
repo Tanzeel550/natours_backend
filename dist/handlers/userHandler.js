@@ -27,22 +27,23 @@ const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
 const AppError_1 = __importDefault(require("../utils/AppError"));
 const userModel_1 = __importDefault(require("../models/userModel"));
 const factoryFunctions = __importStar(require("./factoryFunctions"));
+const tourModel_1 = __importDefault(require("../models/tourModel"));
 exports.updateMe = catchAsync_1.default(async (req, res, next) => {
     let { body } = req;
     if (body.password || body.confirmPassword)
         return next(new AppError_1.default('This route is not for updating password', 404));
-    const updatedUser = await userModel_1.default.findByIdAndUpdate(req.body.user.id, req.body, {
+    console.log(req.user);
+    const updatedUser = await userModel_1.default.findByIdAndUpdate(req.user.id, req.body, {
         runValidators: true,
         new: true
-    }).select('-password -createdAt -changePasswordAt');
+    }).select('-password -createdAt -changedPasswordAt');
     res.status(200).json({
         status: 'Success',
         data: updatedUser
     });
 });
 exports.deleteMe = catchAsync_1.default(async (req, res, next) => {
-    let user = req.body.user;
-    await user.updateOne({ isDeleted: true }, { runValidators: true });
+    await tourModel_1.default.findByIdAndUpdate(req.user.id, { isDeleted: true }, { runValidators: true });
     res.status(204).json({
         status: 'Success'
     });
@@ -50,7 +51,7 @@ exports.deleteMe = catchAsync_1.default(async (req, res, next) => {
 const getMe = (req, res) => {
     res.status(200).json({
         status: 'Success',
-        user: req.body.user
+        user: req.user
     });
 };
 exports.getMe = getMe;

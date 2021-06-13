@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import slugify from 'slugify';
 import AppError from '../utils/AppError';
 import { NextFunction, Request, Response } from 'express';
-import UserDocumentType from '../types/authTypes';
+import UserDocumentType, { IGetUserAuthInfoRequest } from '../types/authTypes';
 
 // const storage = multer.diskStorage({
 //     destination: function (req: Request, file, cb) {
@@ -29,11 +29,11 @@ const upload = multer({ storage: storage, fileFilter });
 // <-------------------Process for uploading single user photo ------------------->
 export const userSingleUpload = upload.single('photo');
 export const resizeUserPhoto = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     if (!req.file) return next();
 
     const nameOfPhoto = `user-${
-      (req.body.user as UserDocumentType).id
+      (req.user as UserDocumentType).id
     }-${Date.now()}.jpg`;
 
     await sharp(req.file.buffer)

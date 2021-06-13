@@ -103,7 +103,7 @@ reviewSchema.pre(
     this.populate({
       path: 'user',
       select:
-        '-__v -isDeleted -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
+        '-__v -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
     });
     next();
   }

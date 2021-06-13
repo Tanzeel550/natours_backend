@@ -15,7 +15,7 @@ bookingsRouter.use(authHandler.protect);
 // create session
 bookingsRouter.post(
   '/tour/:id/create-session',
-  tourHandler.getTourById,
+  tourHandler.setTourAtRequest,
   bookingHandler.createSession
 );
 

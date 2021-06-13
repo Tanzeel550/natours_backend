@@ -3,21 +3,23 @@ import AppError from '../utils/AppError';
 import UserModel from '../models/userModel';
 import * as factoryFunctions from './factoryFunctions';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { IGetUserAuthInfoRequest } from '../types/authTypes';
+import TourModel from '../models/tourModel';
 
 export const updateMe = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     let { body } = req;
     if (body.password || body.confirmPassword)
       return next(new AppError('This route is not for updating password', 404));
-
+    console.log(req.user);
     const updatedUser = await UserModel.findByIdAndUpdate(
-      req.body.user.id,
+      req.user!.id,
       req.body,
       {
         runValidators: true,
         new: true
       }
-    ).select('-password -createdAt -changePasswordAt');
+    ).select('-password -createdAt -changedPasswordAt');
 
     res.status(200).json({
       status: 'Success',
@@ -27,19 +29,22 @@ export const updateMe = catchAsync(
 );
 
 export const deleteMe = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    let user = req.body.user;
-    await user.updateOne({ isDeleted: true }, { runValidators: true });
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
+    await TourModel.findByIdAndUpdate(
+      req.user!.id,
+      { isDeleted: true },
+      { runValidators: true }
+    );
     res.status(204).json({
       status: 'Success'
     });
   }
 );
 
-export const getMe: RequestHandler = (req, res) => {
+export const getMe = (req: IGetUserAuthInfoRequest, res: Response) => {
   res.status(200).json({
     status: 'Success',
-    user: req.body.user
+    user: req.user
   });
 };
 

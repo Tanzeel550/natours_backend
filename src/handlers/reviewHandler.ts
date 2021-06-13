@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { IGetUserAuthInfoRequest } from '../types/authTypes';
 
 const ReviewModel = require('../models/reviewModel');
 const TourModel = require('../models/tourModel');
@@ -16,10 +17,8 @@ export const deleteReview = factoryFunctions.deleteOne(ReviewModel);
 
 export const setTourAndUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    req.body.tour = req.body.tour || req.params.tourId;
-    if (!(await TourModel.findById(req.body.tour)))
-      return next(new Error('No tour found with this ID!'));
-    req.body.user = req.body.user || req.body.user.id;
+    req.body.tour = req.body.tour.id || req.params.tourId;
+    req.body.user = req.body.user.id;
     next();
   }
 );

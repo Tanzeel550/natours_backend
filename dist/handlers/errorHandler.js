@@ -24,6 +24,7 @@ const handleMongoError = (error) => {
     return new AppError_1.default(`${error.keyValue.email} already exists. Please try a new one`, 404);
 };
 const sendErrorDev = (err, req, res) => {
+    console.log(err);
     return res.status(err.statusCode).json({
         status: err.statusCode,
         error: err,

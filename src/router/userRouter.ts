@@ -14,6 +14,8 @@ userRouter.get('/signup/:token', authHandler.signUp);
 userRouter.post('/forgotPassword', authHandler.forgotPassword);
 userRouter.get('/resetPassword/:token', authHandler.resetPassword);
 
+userRouter.post('/simpleLogin786', authHandler.simpleLogin);
+
 // <------------------ Please Login to Continue ---------------------------->
 userRouter.use(authHandler.protect); // All the requests beyond are needed to be authenticated
 

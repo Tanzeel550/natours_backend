@@ -10,6 +10,8 @@ import BookingRouter from './router/bookingsRouter';
 import globalErrorController from './handlers/errorHandler';
 import AppError from './utils/AppError';
 import { webHookCheckout } from './handlers/bookingHandler';
+import path from 'path';
+import multer from 'multer';
 
 // import dotenv from 'dotenv';
 // dotenv.config({ path: `${__dirname}/config.env` });
@@ -42,7 +44,7 @@ app.use(cookieParser());
 // });
 
 // Serving up static files
-app.use(express.static('./public/'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/v1/tours', TourRouter);
 app.use('/api/v1/users', UserRouter);

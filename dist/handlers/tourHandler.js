@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getToursWithIn = exports.getTourStats = exports.deleteTour = exports.updateTour = exports.createTour = exports.getTourById = exports.getAllTours = exports.checkBody = void 0;
+exports.getToursWithIn = exports.getTourStats = exports.setTourAtRequest = exports.deleteTour = exports.updateTour = exports.createTour = exports.getTourById = exports.getAllTours = exports.checkBody = void 0;
 const TourModel = require('../models/tourModel');
 const AppError = require('../utils/AppError');
 const catchAsync = require('../utils/catchAsync');
@@ -11,6 +11,13 @@ exports.getTourById = factoryFunctions.getOne(TourModel);
 exports.createTour = factoryFunctions.createOne(TourModel);
 exports.updateTour = factoryFunctions.updateOne(TourModel);
 exports.deleteTour = factoryFunctions.deleteOne(TourModel);
+exports.setTourAtRequest = catchAsync(async (req, res, next) => {
+    const tour = await TourModel.findById(req.params.id);
+    if (!tour)
+        return next(new AppError('No such tour found', 404));
+    req.tour = tour;
+    next();
+});
 exports.getTourStats = catchAsync(async (req, res, next) => {
     const stats = await TourModel.aggregate([
         {

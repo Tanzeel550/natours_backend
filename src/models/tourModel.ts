@@ -120,7 +120,7 @@ tourSchema.pre(
     this.populate({
       path: 'guides',
       select:
-        '-isDeleted -passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
+        '-passwordResetToken -passwordResetTokenTimeOut -changedPasswordAt -isVerified'
     });
     this.populate('reviews');
     next();
@@ -138,6 +138,6 @@ tourSchema.pre(
 //     next()
 // })
 
-const TourModel = model('tours', tourSchema);
+const TourModel = model<TourDocumentType>('tours', tourSchema);
 
 export = TourModel;

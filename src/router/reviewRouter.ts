@@ -1,6 +1,7 @@
 import express from 'express';
 import * as reviewHandler from '../handlers/reviewHandler';
 import * as authHandler from '../handlers/authHandler';
+import * as tourHandler from '../handlers/tourHandler';
 
 const reviewRouter = express.Router({
   mergeParams: true
@@ -14,7 +15,6 @@ reviewRouter
     authHandler.protect,
     authHandler.restrictTo('user'),
     reviewHandler.checkBody,
-    reviewHandler.setTourAndUser,
     reviewHandler.createReview
   );
 
@@ -26,12 +26,14 @@ reviewRouter
     authHandler.protect,
     authHandler.restrictTo('user'),
     reviewHandler.checkBody,
+    tourHandler.setTourAtRequest,
     reviewHandler.setTourAndUser,
     reviewHandler.updateReview
   )
   .delete(
     authHandler.protect,
     authHandler.restrictTo('user'),
+    tourHandler.setTourAtRequest,
     reviewHandler.setTourAndUser,
     reviewHandler.deleteReview
   );

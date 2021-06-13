@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { Request } from 'express';
 
 interface UserType {
   name: string;
@@ -6,6 +7,7 @@ interface UserType {
   password: string;
   role: 'admin' | 'guide' | 'lead-guide' | 'user';
   photo: string;
+  id: string;
 }
 
 export default interface UserDocumentType extends UserType, Document {
@@ -24,4 +26,8 @@ export default interface UserDocumentType extends UserType, Document {
     hashedPassword: string
   ) => boolean;
   createPasswordResetToken: () => string;
+}
+
+export interface IGetUserAuthInfoRequest extends Request {
+  user?: UserType;
 }

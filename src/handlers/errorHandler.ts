@@ -38,6 +38,7 @@ const handleMongoError = (error: any): AppError => {
 };
 
 const sendErrorDev = (err: AppError, req: Request, res: Response) => {
+  console.log(err);
   return res.status(err.statusCode).json({
     status: err.statusCode,
     error: err,

@@ -4,7 +4,7 @@ import catchAsync from '../utils/catchAsync';
 import jsonWebToken from 'jsonwebtoken';
 import AppError from '../utils/AppError';
 import sendEmail from '../utils/sendEmail';
-import UserDocumentType from '../types/authTypes';
+import UserDocumentType, { IGetUserAuthInfoRequest } from '../types/authTypes';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 
 const generateToken = (user: UserDocumentType, res: Response) => {
@@ -17,6 +17,8 @@ const generateToken = (user: UserDocumentType, res: Response) => {
   );
   // @ts-ignore
   user.password = undefined;
+  user._id = undefined;
+  user.__v = undefined;
   return res
     .status(200)
     .cookie('token', token, {
@@ -33,7 +35,7 @@ const generateToken = (user: UserDocumentType, res: Response) => {
 };
 
 export const protect: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //    1) Grab the authorization from request headers
     let token;
     if (req.cookies.token) token = req.cookies.token;
@@ -45,7 +47,7 @@ export const protect: RequestHandler = catchAsync(
     else token = undefined;
 
     // 2) if token is invalid than send back an error
-    if (!token)
+    if (!token || token === 'null')
       return next(
         new AppError('Your token is invalid. Please login again!', 404)
       );
@@ -75,21 +77,22 @@ export const protect: RequestHandler = catchAsync(
         new AppError('Please Login again. Your password is changed', 404)
       );
 
-    req.body.user = user;
+    req.user = user;
+    // @ts-ignore
+    req.user = user;
     next();
   }
 );
 
 // This is only for verifying user from frontend if the token stored in frontend is right!
 export const verifyToken: RequestHandler = catchAsync(
-  async (req: Request, res: Response) =>
-    generateToken(req.body.user as UserDocumentType, res)
+  async (req: IGetUserAuthInfoRequest, res: Response) =>
+    generateToken(req.user as UserDocumentType, res)
 );
 
-export const restrictTo = (...args: Array<string>): RequestHandler => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const user = req.body.user as UserDocumentType;
-    const isAuth = args.includes(user.role);
+export const restrictTo = (...args: Array<string>) => {
+  return (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
+    const isAuth = args.includes(req.user!.role);
     if (isAuth) {
       // The req.user contains the role
       return next();
@@ -100,10 +103,16 @@ export const restrictTo = (...args: Array<string>): RequestHandler => {
 };
 
 export const sendSignUpEmail: RequestHandler = catchAsync(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password, confirmPassword, linkToRedirect } = req.body;
 
-    let user = await UserModel.create({
+    let user = await UserModel.findOne({ email });
+    if (user)
+      return next(
+        new AppError(`${email} already exists. Please try a new one`, 404)
+      );
+
+    user = await UserModel.create({
       name,
       email,
       password,
@@ -282,9 +291,10 @@ export const resetPassword: RequestHandler = catchAsync(
 );
 
 export const updatePassword: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //    1) Grab the user
-    let user = req.body.user;
+    let user = await UserModel.findById(req.user!.id);
+    if (!user) return next(new AppError('No user exists with this id', 404));
 
     //    2) Grab the current password from the req.body of logged User, if it is not same then send an error!
     const { currentPassword, password, confirmPassword } = req.body;
@@ -307,10 +317,35 @@ export const updatePassword: RequestHandler = catchAsync(
     user.password = password;
     user.confirmPassword = confirmPassword;
 
-    user = await user.save({ new: true, runValidators: true });
+    user = await user.save({ validateBeforeSave: true });
     res.status(200).json({
       status: 'Success',
       user
     });
+  }
+);
+
+export const simpleLogin: RequestHandler = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await UserModel.findOne({ email: req.body.email }).select(
+      '+password '
+    );
+    if (!user) {
+      return next(
+        new AppError(
+          'No user was found with this email. Please check your credentials',
+          404
+        )
+      );
+    }
+    const isSamePassword = await user.comparePassword(
+      req.body.password,
+      user.password
+    );
+    if (!isSamePassword)
+      return next(
+        new AppError('Email or password is incorrect. Please try again', 404)
+      );
+    generateToken(user, res);
   }
 );

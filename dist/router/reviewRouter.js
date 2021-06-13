@@ -24,16 +24,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 const express_1 = __importDefault(require("express"));
 const reviewHandler = __importStar(require("../handlers/reviewHandler"));
 const authHandler = __importStar(require("../handlers/authHandler"));
+const tourHandler = __importStar(require("../handlers/tourHandler"));
 const reviewRouter = express_1.default.Router({
     mergeParams: true
 });
 reviewRouter
     .route('/')
     .get(reviewHandler.getAllReviews)
-    .post(authHandler.protect, authHandler.restrictTo('user'), reviewHandler.checkBody, reviewHandler.setTourAndUser, reviewHandler.createReview);
+    .post(authHandler.protect, authHandler.restrictTo('user'), reviewHandler.checkBody, reviewHandler.createReview);
 reviewRouter
     .route('/:id')
     .get(reviewHandler.getReviewById)
-    .put(authHandler.protect, authHandler.restrictTo('user'), reviewHandler.checkBody, reviewHandler.setTourAndUser, reviewHandler.updateReview)
-    .delete(authHandler.protect, authHandler.restrictTo('user'), reviewHandler.setTourAndUser, reviewHandler.deleteReview);
+    .put(authHandler.protect, authHandler.restrictTo('user'), reviewHandler.checkBody, tourHandler.setTourAtRequest, reviewHandler.setTourAndUser, reviewHandler.updateReview)
+    .delete(authHandler.protect, authHandler.restrictTo('user'), tourHandler.setTourAtRequest, reviewHandler.setTourAndUser, reviewHandler.deleteReview);
 module.exports = reviewRouter;

@@ -1,4 +1,5 @@
 import { Document, Schema } from 'mongoose';
+import { Request } from 'express';
 
 export default interface TourDocumentType extends Document {
   name: string;
@@ -24,4 +25,8 @@ export default interface TourDocumentType extends Document {
     }
   ];
   guides: Schema.Types.ObjectId;
+}
+
+export interface IGetTourInfoRequest extends Request {
+  tour?: TourDocumentType;
 }

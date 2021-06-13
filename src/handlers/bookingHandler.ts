@@ -2,38 +2,44 @@ import catchAsync from '../utils/catchAsync';
 import BookingModel from '../models/bookingModel';
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import Stripe from 'stripe';
-import UserDocumentType from '../types/authTypes';
+import UserDocumentType, { IGetUserAuthInfoRequest } from '../types/authTypes';
 import * as factoryFunctions from './factoryFunctions';
 import AppError from '../utils/AppError';
 import UserModel from '../models/userModel';
+import { IGetTourInfoRequest } from '../types/tourTypes';
 
 const stripe = new Stripe(process.env.Stripe_SECRET_KEY!!);
 
 type ICheckoutSession = Stripe.checkouts.sessions.ICheckoutSession;
 
 export const createSession: RequestHandler = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { user, tour } = req.body;
+  async (
+    req: IGetUserAuthInfoRequest & IGetTourInfoRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const user = req.user;
+    const tour = req.tour;
     const { success_url, cancel_url } = req.body;
 
     const session: ICheckoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      customer_email: user.email,
-      client_reference_id: tour.id,
+      customer_email: user!.email,
+      client_reference_id: tour!.id,
       // success_url: `http://localhost:8000/api/v1/bookings/create-booking-for-Stripe?tour=${tour.id}&user=${user.id}&price=${tour.price}`,
       // success_url: `http://localhost:3000/createBooking/tour/${tour.id}/user/${user.id}/price/${tour.price}`,
       success_url,
       cancel_url,
       line_items: [
         {
-          amount: tour.price * 100,
+          amount: tour!.price * 100,
           quantity: 1,
           currency: 'usd',
           images: [
-            `${req.protocol}://${req.get('host')}/img/tours/${tour.imageCover}`
+            `${req.protocol}://${req.get('host')}/img/tours/${tour!.imageCover}`
           ],
-          name: `${tour.name} Tour`,
-          description: tour.summary
+          name: `${tour!.name} Tour`,
+          description: tour!.summary
         }
       ]
     });
@@ -61,10 +67,10 @@ export const createBookingForStripe: RequestHandler = catchAsync(
 );
 
 export const getMyBookedTours = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: IGetUserAuthInfoRequest, res: Response, next: NextFunction) => {
     //    1) Get all bookings by user id
     const allBookings = await BookingModel.find({
-      user: (req.body.user as UserDocumentType).id
+      user: (req.user as UserDocumentType).id
     });
 
     //    2) Get all the tours from bookings

@@ -29,6 +29,6 @@ const bookingsRouter = express_1.default.Router({
     mergeParams: true
 });
 bookingsRouter.use(authHandler.protect);
-bookingsRouter.post('/tour/:id/create-session', tourHandler.getTourById, bookingHandler.createSession);
+bookingsRouter.post('/tour/:id/create-session', tourHandler.setTourAtRequest, bookingHandler.createSession);
 bookingsRouter.get('/my-booked-tours', bookingHandler.getMyBookedTours);
 module.exports = bookingsRouter;

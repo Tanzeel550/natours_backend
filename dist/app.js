@@ -13,6 +13,7 @@ const bookingsRouter_1 = __importDefault(require("./router/bookingsRouter"));
 const errorHandler_1 = __importDefault(require("./handlers/errorHandler"));
 const AppError_1 = __importDefault(require("./utils/AppError"));
 const bookingHandler_1 = require("./handlers/bookingHandler");
+const path_1 = __importDefault(require("path"));
 const app = express_1.default();
 app.use(cors_1.default());
 app.post('/webhook-checkout', express_1.default.raw({ type: 'application/json' }), bookingHandler_1.webHookCheckout);
@@ -21,7 +22,7 @@ if (process.env.ENVIRONMENT === 'development') {
 }
 app.use(express_1.default.json());
 app.use(cookie_parser_1.default());
-app.use(express_1.default.static('./public/'));
+app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
 app.use('/api/v1/tours', tourRouter_1.default);
 app.use('/api/v1/users', userRouter_1.default);
 app.use('/api/v1/reviews', reviewRouter_1.default);

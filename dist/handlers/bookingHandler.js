@@ -31,7 +31,8 @@ const AppError_1 = __importDefault(require("../utils/AppError"));
 const userModel_1 = __importDefault(require("../models/userModel"));
 const stripe = new stripe_1.default(process.env.Stripe_SECRET_KEY);
 exports.createSession = catchAsync_1.default(async (req, res, next) => {
-    const { user, tour } = req.body;
+    const user = req.user;
+    const tour = req.tour;
     const { success_url, cancel_url } = req.body;
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -67,7 +68,7 @@ exports.createBookingForStripe = catchAsync_1.default(async (req, res) => {
 });
 exports.getMyBookedTours = catchAsync_1.default(async (req, res, next) => {
     const allBookings = await bookingModel_1.default.find({
-        user: req.body.user.id
+        user: req.user.id
     });
     const myTours = allBookings.map(booking => booking.tour);
     res.status(200).json({

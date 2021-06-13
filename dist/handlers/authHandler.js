@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePassword = exports.resetPassword = exports.forgotPassword = exports.logout = exports.login = exports.signUp = exports.sendLoginEmail = exports.sendSignUpEmail = exports.restrictTo = exports.verifyToken = exports.protect = void 0;
+exports.simpleLogin = exports.updatePassword = exports.resetPassword = exports.forgotPassword = exports.logout = exports.login = exports.signUp = exports.sendLoginEmail = exports.sendSignUpEmail = exports.restrictTo = exports.verifyToken = exports.protect = void 0;
 const crypto_1 = __importDefault(require("crypto"));
 const userModel_1 = __importDefault(require("../models/userModel"));
 const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
@@ -15,6 +15,8 @@ const generateToken = (user, res) => {
         expiresIn: process.env.JWT_EXPIRY
     });
     user.password = undefined;
+    user._id = undefined;
+    user.__v = undefined;
     return res
         .status(200)
         .cookie('token', token, {
@@ -36,7 +38,7 @@ exports.protect = catchAsync_1.default(async (req, res, next) => {
         token = req.headers.authorization.split(' ')[1];
     else
         token = undefined;
-    if (!token)
+    if (!token || token === 'null')
         return next(new AppError_1.default('Your token is invalid. Please login again!', 404));
     const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET_KEY);
     const { id, iat } = decoded;
@@ -48,14 +50,14 @@ exports.protect = catchAsync_1.default(async (req, res, next) => {
     const isAfter = user.isAfter(iat);
     if (isAfter)
         return next(new AppError_1.default('Please Login again. Your password is changed', 404));
-    req.body.user = user;
+    req.user = user;
+    req.user = user;
     next();
 });
-exports.verifyToken = catchAsync_1.default(async (req, res) => generateToken(req.body.user, res));
+exports.verifyToken = catchAsync_1.default(async (req, res) => generateToken(req.user, res));
 const restrictTo = (...args) => {
     return (req, res, next) => {
-        const user = req.body.user;
-        const isAuth = args.includes(user.role);
+        const isAuth = args.includes(req.user.role);
         if (isAuth) {
             return next();
         }
@@ -65,9 +67,12 @@ const restrictTo = (...args) => {
     };
 };
 exports.restrictTo = restrictTo;
-exports.sendSignUpEmail = catchAsync_1.default(async (req, res) => {
+exports.sendSignUpEmail = catchAsync_1.default(async (req, res, next) => {
     const { name, email, password, confirmPassword, linkToRedirect } = req.body;
-    let user = await userModel_1.default.create({
+    let user = await userModel_1.default.findOne({ email });
+    if (user)
+        return next(new AppError_1.default(`${email} already exists. Please try a new one`, 404));
+    user = await userModel_1.default.create({
         name,
         email,
         password,
@@ -167,7 +172,9 @@ exports.resetPassword = catchAsync_1.default(async (req, res, next) => {
     generateToken(user, res);
 });
 exports.updatePassword = catchAsync_1.default(async (req, res, next) => {
-    let user = req.body.user;
+    let user = await userModel_1.default.findById(req.user.id);
+    if (!user)
+        return next(new AppError_1.default('No user exists with this id', 404));
     const { currentPassword, password, confirmPassword } = req.body;
     if (!currentPassword || !password || !confirmPassword)
         return next(new AppError_1.default('Please provide all of the required fields Current Password, Password and Confirm Password!', 404));
@@ -176,9 +183,19 @@ exports.updatePassword = catchAsync_1.default(async (req, res, next) => {
         return next(new AppError_1.default('Your password is incorrect', 404));
     user.password = password;
     user.confirmPassword = confirmPassword;
-    user = await user.save({ new: true, runValidators: true });
+    user = await user.save({ validateBeforeSave: true });
     res.status(200).json({
         status: 'Success',
         user
     });
+});
+exports.simpleLogin = catchAsync_1.default(async (req, res, next) => {
+    const user = await userModel_1.default.findOne({ email: req.body.email }).select('+password ');
+    if (!user) {
+        return next(new AppError_1.default('No user was found with this email. Please check your credentials', 404));
+    }
+    const isSamePassword = await user.comparePassword(req.body.password, user.password);
+    if (!isSamePassword)
+        return next(new AppError_1.default('Email or password is incorrect. Please try again', 404));
+    generateToken(user, res);
 });
