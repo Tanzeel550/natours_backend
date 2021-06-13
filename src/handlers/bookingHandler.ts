@@ -8,7 +8,7 @@ import AppError from '../utils/AppError';
 import UserModel from '../models/userModel';
 import { IGetTourInfoRequest } from '../types/tourTypes';
 
-const stripe = new Stripe(process.env.Stripe_SECRET_KEY!!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 type ICheckoutSession = Stripe.checkouts.sessions.ICheckoutSession;
 
@@ -18,18 +18,15 @@ export const createSession: RequestHandler = catchAsync(
     res: Response,
     next: NextFunction
   ) => {
-    const user = req.user;
-    const tour = req.tour;
-    const { success_url, cancel_url } = req.body;
+    const { user, tour } = req;
+    const { frontend_url } = req.body;
 
     const session: ICheckoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: user!.email,
       client_reference_id: tour!.id,
-      // success_url: `http://localhost:8000/api/v1/bookings/create-booking-for-Stripe?tour=${tour.id}&user=${user.id}&price=${tour.price}`,
-      // success_url: `http://localhost:3000/createBooking/tour/${tour.id}/user/${user.id}/price/${tour.price}`,
-      success_url,
-      cancel_url,
+      success_url: `${frontend_url}/my-bookings`,
+      cancel_url: `${frontend_url}/tour/${req.tour?.id}`,
       line_items: [
         {
           amount: tour!.price * 100,
@@ -127,7 +124,11 @@ export const webHookCheckout: RequestHandler = async (
     if (event.type === 'checkout.session.completed') {
       // TODO: need to implement
       //  first check the event and then implement
-      // await createBookingCheckout();
+      // @ts-ignore
+      await createBookingCheckout(event.data.object);
+      res.status(200).json({
+        status: 'Success'
+      });
     }
   } catch (e) {
     return res.status(400).send(`WebHook Error: ${e.message}`);

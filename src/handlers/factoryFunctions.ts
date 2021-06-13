@@ -1,9 +1,8 @@
 import catchAsync from '../utils/catchAsync';
 import APIFeatures from '../utils/APIFeatures';
 import AppError from '../utils/AppError';
-import { Document, DocumentQuery, Model } from 'mongoose';
+import { Document, Model } from 'mongoose';
 import { NextFunction, Request, Response } from 'express';
-import chalk from 'chalk';
 
 export const getAll = <T extends Document>(model: Model<T>) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -97,7 +96,7 @@ export const deleteOne = <T extends Document>(model: Model<T>) => {
 export const checkBody = () => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     if (Object.keys(req.body).length === 0)
-      return next(new AppError('Body is No provided', 404));
+      return next(new AppError('Body is not provided', 404));
     next();
   });
 };

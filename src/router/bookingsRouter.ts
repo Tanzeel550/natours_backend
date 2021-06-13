@@ -8,7 +8,10 @@ const bookingsRouter = express.Router({
 });
 
 // This tour is specially for creating bookings because it is called by stripe
-// bookingsRouter.get('/create-booking-for-stripe', bookingHandler.createBookingForStripe);
+bookingsRouter.get(
+  '/create-booking-for-stripe',
+  bookingHandler.createBookingForStripe
+);
 
 bookingsRouter.use(authHandler.protect);
 

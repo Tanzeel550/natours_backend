@@ -28,6 +28,7 @@ const bookingHandler = __importStar(require("../handlers/bookingHandler"));
 const bookingsRouter = express_1.default.Router({
     mergeParams: true
 });
+bookingsRouter.get('/create-booking-for-stripe', bookingHandler.createBookingForStripe);
 bookingsRouter.use(authHandler.protect);
 bookingsRouter.post('/tour/:id/create-session', tourHandler.setTourAtRequest, bookingHandler.createSession);
 bookingsRouter.get('/my-booked-tours', bookingHandler.getMyBookedTours);

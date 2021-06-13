@@ -29,17 +29,17 @@ const stripe_1 = __importDefault(require("stripe"));
 const factoryFunctions = __importStar(require("./factoryFunctions"));
 const AppError_1 = __importDefault(require("../utils/AppError"));
 const userModel_1 = __importDefault(require("../models/userModel"));
-const stripe = new stripe_1.default(process.env.Stripe_SECRET_KEY);
+const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY);
 exports.createSession = catchAsync_1.default(async (req, res, next) => {
-    const user = req.user;
-    const tour = req.tour;
-    const { success_url, cancel_url } = req.body;
+    var _a;
+    const { user, tour } = req;
+    const { frontend_url } = req.body;
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         customer_email: user.email,
         client_reference_id: tour.id,
-        success_url,
-        cancel_url,
+        success_url: `${frontend_url}/my-bookings`,
+        cancel_url: `${frontend_url}/tour/${(_a = req.tour) === null || _a === void 0 ? void 0 : _a.id}`,
         line_items: [
             {
                 amount: tour.price * 100,
@@ -93,6 +93,10 @@ const webHookCheckout = async (req, res, next) => {
     try {
         const event = stripe.webhooks.constructEvent(req.body, signature, process.env.Stripe_WEBHOOK_SECRET);
         if (event.type === 'checkout.session.completed') {
+            await createBookingCheckout(event.data.object);
+            res.status(200).json({
+                status: 'Success'
+            });
         }
     }
     catch (e) {

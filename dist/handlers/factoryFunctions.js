@@ -81,7 +81,7 @@ exports.deleteOne = deleteOne;
 const checkBody = () => {
     return catchAsync_1.default(async (req, res, next) => {
         if (Object.keys(req.body).length === 0)
-            return next(new AppError_1.default('Body is No provided', 404));
+            return next(new AppError_1.default('Body is not provided', 404));
         next();
     });
 };
