@@ -7,7 +7,8 @@ const bookingsRouter = express.Router({
   mergeParams: true
 });
 
-// This tour is specially for creating bookings because it is called by stripe
+// The following fake route actually goes like this
+// create-booking-for-stripe?tour=TOUR_ID&user=USER_ID&price=PRICE
 bookingsRouter.get(
   '/create-booking-for-stripe',
   bookingHandler.createBookingForStripe
