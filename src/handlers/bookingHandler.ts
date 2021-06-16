@@ -132,6 +132,7 @@ export const webHookCheckout: RequestHandler = async (
       });
     }
   } catch (e) {
+    console.log(e.message);
     return res.status(400).send(`WebHook Error: ${e.message}`);
   }
 
