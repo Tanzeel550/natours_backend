@@ -98,12 +98,8 @@ export const webHookCheckout: RequestHandler = async (
   next: NextFunction
 ) => {
   try {
-    console.log('=========================== req.headers\n' + req.headers);
-
     const signature: string | string[] | undefined =
       req.headers['stripe-signature'];
-
-    console.log('=========================== signature\n' + signature);
 
     const event = stripe.webhooks.constructEvent(
       req.body,
@@ -111,12 +107,7 @@ export const webHookCheckout: RequestHandler = async (
       process.env.STRIPE_WEBHOOK_SECRET!!
     );
     if (event.type === 'checkout.session.completed') {
-      console.log(event.data);
-      // TODO: need to implement
-      //  first check the event and then implement
       const session: any = event.data.object;
-
-      console.log('===================== session\n' + session);
 
       const tour = session.client_reference_id;
       const user: UserDocumentType | null = await UserModel.findOne({
@@ -132,12 +123,11 @@ export const webHookCheckout: RequestHandler = async (
       });
     }
   } catch (e) {
-    console.log(req.headers);
-    console.log(e.message);
     res.status(400).json({
       message: `WebHook Error: ${e.message}`,
       stack: e.stack,
-      error: JSON.stringify(e)
+      error: JSON.stringify(e),
+      headers: JSON.stringify(req.headers)
     });
   }
 };
