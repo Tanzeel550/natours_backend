@@ -76,28 +76,25 @@ exports.getMyBookedTours = catchAsync_1.default(async (req, res, next) => {
         data: myTours
     });
 });
-const createBookingCheckout = async (sessionData) => {
-    console.log(sessionData);
-    const tour = sessionData.client_reference_id;
-    const user = await userModel_1.default.findOne({
-        email: sessionData.customer_email
-    });
-    if (!user) {
-        throw new AppError_1.default('No user found with this id', 404);
-    }
-    let price = sessionData.display_items[0].amount;
-    await bookingModel_1.default.create({ tour, user: user.id, price });
-};
 const webHookCheckout = async (req, res, next) => {
     try {
-        console.log(req.headers);
+        console.log('=========================== req.headers\n' + req.headers);
         const signature = req.headers['stripe-signature'];
-        console.log(signature);
+        console.log('=========================== signature\n' + signature);
         const event = stripe.webhooks.constructEvent(req.body, signature, process.env.STRIPE_WEBHOOK_SECRET);
-        console.log();
         if (event.type === 'checkout.session.completed') {
             console.log(event.data);
-            await createBookingCheckout(event.data.object);
+            const session = event.data.object;
+            console.log('===================== session\n' + session);
+            const tour = session.client_reference_id;
+            const user = await userModel_1.default.findOne({
+                email: session.customer_email
+            });
+            if (!user) {
+                throw new AppError_1.default('No user found with this id', 404);
+            }
+            let price = session.amount_total / 100;
+            await bookingModel_1.default.create({ tour, user: user.id, price });
             res.status(200).json({
                 status: 'Success'
             });
