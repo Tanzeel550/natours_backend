@@ -112,11 +112,11 @@ export const webHookCheckout: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.headers);
-  const signature: string | string[] | undefined =
-    req.headers['stripe-signature'];
-  console.log(signature);
   try {
+    console.log(req.headers);
+    const signature: string | string[] | undefined =
+      req.headers['stripe-signature'];
+    console.log(signature);
     const event = stripe.webhooks.constructEvent(
       req.body,
       signature!!,
@@ -124,7 +124,7 @@ export const webHookCheckout: RequestHandler = async (
     );
     console.log();
     if (event.type === 'checkout.session.completed') {
-      console.log(event.data)
+      console.log(event.data);
       // TODO: need to implement
       //  first check the event and then implement
       // @ts-ignore
@@ -134,15 +134,14 @@ export const webHookCheckout: RequestHandler = async (
       });
     }
   } catch (e) {
+    console.log(req.headers);
     console.log(e.message);
-    return res.status(400).json({
+    res.status(400).json({
       message: `WebHook Error: ${e.message}`,
       stack: e.stack,
       error: JSON.stringify(e)
     });
   }
-
-  res.status(200).json({ received: true });
 };
 
 export const getAllBookings = factoryFunctions.getAll(BookingModel);
