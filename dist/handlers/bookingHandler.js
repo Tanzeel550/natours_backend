@@ -93,6 +93,7 @@ const webHookCheckout = async (req, res, next) => {
     try {
         const event = stripe.webhooks.constructEvent(req.body, signature, process.env.Stripe_WEBHOOK_SECRET);
         if (event.type === 'checkout.session.completed') {
+            console.log(event.data);
             await createBookingCheckout(event.data.object);
             res.status(200).json({
                 status: 'Success'

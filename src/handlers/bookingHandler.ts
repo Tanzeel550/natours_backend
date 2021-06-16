@@ -122,6 +122,7 @@ export const webHookCheckout: RequestHandler = async (
       process.env.Stripe_WEBHOOK_SECRET!!
     );
     if (event.type === 'checkout.session.completed') {
+      console.log(event.data)
       // TODO: need to implement
       //  first check the event and then implement
       // @ts-ignore
