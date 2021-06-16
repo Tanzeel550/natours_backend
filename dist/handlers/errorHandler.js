@@ -33,6 +33,7 @@ const sendErrorDev = (err, req, res) => {
     });
 };
 const sendErrorProd = (err, req, res) => {
+    console.log(err);
     if (err.isOperational) {
         return res.status(err.statusCode).json({
             status: err.statusCode,

@@ -16,7 +16,7 @@ const bookingHandler_1 = require("./handlers/bookingHandler");
 const path_1 = __importDefault(require("path"));
 const app = express_1.default();
 app.use(cors_1.default());
-app.post('/webhook-checkout', express_1.default.raw({ type: 'application/json' }), bookingHandler_1.webHookCheckout);
+app.post('webhook', express_1.default.raw({ type: 'application/json' }), bookingHandler_1.webHookCheckout);
 if (process.env.ENVIRONMENT === 'development') {
     app.use(morgan_1.default('dev'));
 }
