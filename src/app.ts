@@ -22,7 +22,7 @@ const app = express();
 app.use(cors());
 
 app.post(
-  'webhook',
+  '/webhook',
   express.raw({ type: 'application/json' }),
   webHookCheckout
 );
