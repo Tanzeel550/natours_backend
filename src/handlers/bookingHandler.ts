@@ -137,7 +137,8 @@ export const webHookCheckout: RequestHandler = async (
     console.log(e.message);
     return res.status(400).json({
       message: `WebHook Error: ${e.message}`,
-      stack: e.stack
+      stack: e.stack,
+      error: JSON.stringify(e)
     });
   }
 
