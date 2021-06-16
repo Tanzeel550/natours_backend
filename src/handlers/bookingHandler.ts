@@ -114,13 +114,14 @@ export const webHookCheckout: RequestHandler = async (
 ) => {
   const signature: string | string[] | undefined =
     req.headers['Stripe-signature'];
-
+  console.log(signature);
   try {
     const event = stripe.webhooks.constructEvent(
       req.body,
       signature!!,
       process.env.Stripe_WEBHOOK_SECRET!!
     );
+    console.log();
     if (event.type === 'checkout.session.completed') {
       console.log(event.data)
       // TODO: need to implement
