@@ -135,7 +135,10 @@ export const webHookCheckout: RequestHandler = async (
     }
   } catch (e) {
     console.log(e.message);
-    return res.status(400).send(`WebHook Error: ${e.message}`);
+    return res.status(400).json({
+      message: `WebHook Error: ${e.message}`,
+      stack: e.stack
+    });
   }
 
   res.status(200).json({ received: true });
