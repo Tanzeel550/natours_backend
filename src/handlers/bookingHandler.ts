@@ -120,7 +120,7 @@ export const webHookCheckout: RequestHandler = async (
     const event = stripe.webhooks.constructEvent(
       req.body,
       signature!!,
-      process.env.Stripe_WEBHOOK_SECRET!!
+      process.env.STRIPE_WEBHOOK_SECRET!!
     );
     console.log();
     if (event.type === 'checkout.session.completed') {
